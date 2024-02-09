@@ -1,0 +1,20 @@
+{
+    "name": "efabrica/http-client",
+    "description": "HTTP Client Abstraction",
+    "type": "library",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Efabrica\\HttpClient\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Richard Popelis"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "symfony/http-client": "^6.4"
+    }
+}
