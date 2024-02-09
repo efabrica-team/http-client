@@ -15,6 +15,10 @@
     ],
     "require": {
         "php": "^8.1",
-        "symfony/http-client": "^6.4"
+        "symfony/http-client": "^6.4",
+        "symfony/stopwatch": "^6.4"
+    },
+    "require-dev": {
+        "symfony/http-kernel": "^6.4"
     }
 }

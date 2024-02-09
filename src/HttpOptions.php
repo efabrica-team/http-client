@@ -3,23 +3,16 @@
 namespace Efabrica\HttpClient;
 
 use Closure;
+use Symfony\Component\HttpClient\HttpOptions as SymfonyHttpOptions;
 use Traversable;
 use const STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT;
 
 /**
  * This is a simple typehinted DTO for the HttpClientInterface request
  */
-class HttpClientRequest
+class HttpOptions extends SymfonyHttpOptions
 {
     public function __construct(
-        /**
-         * @var string The HTTP method to use
-         */
-        public string $method = 'GET',
-        /**
-         * @var string The URL to send the request to
-         */
-        public string $url = '',
         /**
          * @var array An associative array of query string values to merge with the request's URL
          */
@@ -30,11 +23,6 @@ class HttpClientRequest
          *            explicitly defined in the headers option - typically "application/json"
          */
         public ?array $jsonBody = null,
-        /**
-         * @var array|null the required 'Content-Type: application/x-www-form-urlencoded' header is automatically
-         *                 added for you when using this option.
-         */
-        public ?array $formBody = null,
         /**
          * @var array|string|resource|Traversable|Closure The callback SHOULD yield a string
          *                                                  smaller than the amount requested as an argument; the empty
@@ -51,7 +39,8 @@ class HttpClientRequest
          */
         public float | null $timeout = null,
         /**
-         * @var float The maximum execution time (in seconds) for the request+response as a whole,     *            a value lower than or equal to 0 means it is unlimited
+         * @var float The maximum execution time (in seconds) for the request+response as a whole,
+         *             a value lower than or equal to 0 means it is unlimited
          */
         public float $maxDuration = 0,
         /**
@@ -136,14 +125,14 @@ class HttpClientRequest
     ) {
     }
 
-    public function toOptionsArray(): array
+    public function toArray(): array
     {
         return array_filter([
             'auth_basic' => $this->basicAuth,
             'auth_bearer' => $this->bearerToken,
             'query' => $this->urlQuery,
             'headers' => $this->headers,
-            'body' => $this->body ?? $this->formBody,
+            'body' => $this->body,
             'json' => $this->jsonBody,
             'user_data' => $this->userData,
             'max_redirects' => $this->maxRedirects,
@@ -169,6 +158,227 @@ class HttpClientRequest
             'capture_peer_cert_chain' => $this->capturePeerCertChain,
             'crypto_method' => $this->cryptoMethod,
             'extra' => $this->extra,
-        ], static fn ($v) => null !== $v);
+        ], static fn($v) => null !== $v);
+    }
+
+    public function fromArray(array | SymfonyHttpOptions $options): self
+    {
+        if ($options instanceof SymfonyHttpOptions) {
+            $options = $options->toArray();
+        }
+        return new self(
+            urlQuery: $options['query'] ?? [],
+            jsonBody: $options['json'] ?? null,
+            body: $options['body'] ?? null,
+            headers: $options['headers'] ?? [],
+            timeout: $options['timeout'] ?? null,
+            maxDuration: $options['max_duration'] ?? 0,
+            basicAuth: $options['auth_basic'] ?? null,
+            bearerToken: $options['auth_bearer'] ?? null,
+            baseUrl: $options['base_uri'] ?? null,
+            userData: $options['user_data'] ?? null,
+            maxRedirects: $options['max_redirects'] ?? 20,
+            httpVersion: $options['http_version'] ?? null,
+            buffer: $options['buffer'] ?? true,
+            onProgress: $options['on_progress'] ?? null,
+            resolve: $options['resolve'] ?? [],
+            proxy: $options['proxy'] ?? null,
+            noProxy: $options['no_proxy'] ?? null,
+            bindTo: $options['bindto'] ?? '0',
+            verifyPeer: $options['verify_peer'] ?? true,
+            verifyHost: $options['verify_host'] ?? true,
+            cafile: $options['cafile'] ?? null,
+            capath: $options['capath'] ?? null,
+            localCert: $options['local_cert'] ?? null,
+            localPk: $options['local_pk'] ?? null,
+            passphrase: $options['passphrase'] ?? null,
+            ciphers: $options['ciphers'] ?? null,
+            peerFingerprint: $options['peer_fingerprint'] ?? null,
+            capturePeerCertChain: $options['capture_peer_cert_chain'] ?? false,
+            cryptoMethod: $options['crypto_method'] ?? STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT,
+            extra: $options['extra'] ?? [],
+        );
+    }
+
+    public function setAuthBasic(string $user, string $password = ''): static
+    {
+        $this->basicAuth = [$user, $password];
+        return $this;
+    }
+
+    public function setAuthBearer(string $token): static
+    {
+        $this->bearerToken = $token;
+        return $this;
+    }
+
+    public function setQuery(array $query): static
+    {
+        $this->urlQuery = $query;
+        return $this;
+    }
+
+    public function setHeaders(iterable $headers): static
+    {
+        $this->headers = $headers;
+        return $this;
+    }
+
+    public function setBody(mixed $body): static
+    {
+        $this->body = $body;
+        return $this;
+    }
+
+    public function setJson(mixed $json): static
+    {
+        if (is_array($json) || $json === null) {
+            $this->jsonBody = $json;
+        }
+        return $this;
+    }
+
+    public function setUserData(mixed $data): static
+    {
+        $this->userData = $data;
+        return $this;
+    }
+
+    public function setMaxRedirects(int $max): static
+    {
+        $this->maxRedirects = $max;
+        return $this;
+    }
+
+    public function setHttpVersion(string $version): static
+    {
+        $this->httpVersion = $version;
+        return $this;
+    }
+
+    public function setBaseUri(string $uri): static
+    {
+        $this->baseUrl = $uri;
+        return $this;
+    }
+
+    public function setVars(array $vars): static
+    {
+        $this->extra = $vars;
+        return $this;
+    }
+
+    public function buffer(bool $buffer): static
+    {
+        $this->buffer = $buffer;
+        return $this;
+    }
+
+    public function setOnProgress(callable $callback): static
+    {
+        $this->onProgress = $callback;
+        return $this;
+    }
+
+    public function resolve(array $hostIps): static
+    {
+        $this->resolve = $hostIps;
+        return $this;
+    }
+
+    public function setProxy(string $proxy): static
+    {
+        $this->proxy = $proxy;
+        return $this;
+    }
+
+    public function setNoProxy(string $noProxy): static
+    {
+        $this->noProxy = $noProxy;
+        return $this;
+    }
+
+    public function setTimeout(float $timeout): static
+    {
+        $this->timeout = $timeout;
+        return $this;
+    }
+
+    public function setMaxDuration(float $maxDuration): static
+    {
+        $this->maxDuration = $maxDuration;
+        return $this;
+    }
+
+    public function bindTo(string $bindto): static
+    {
+        $this->bindTo = $bindto;
+        return $this;
+    }
+
+    public function verifyPeer(bool $verify): static
+    {
+        $this->verifyPeer = $verify;
+        return $this;
+    }
+
+    public function verifyHost(bool $verify): static
+    {
+        $this->verifyHost = $verify;
+        return $this;
+    }
+
+    public function setCaFile(string $cafile): static
+    {
+        $this->cafile = $cafile;
+        return $this;
+    }
+
+    public function setCaPath(string $capath): static
+    {
+        $this->capath = $capath;
+        return $this;
+    }
+
+    public function setLocalCert(string $cert): static
+    {
+        $this->localCert = $cert;
+        return $this;
+    }
+
+    public function setLocalPk(string $pk): static
+    {
+        $this->localPk = $pk;
+        return $this;
+    }
+
+    public function setPassphrase(string $passphrase): static
+    {
+        $this->passphrase = $passphrase;
+        return $this;
+    }
+
+    public function setCiphers(string $ciphers): static
+    {
+        $this->ciphers = $ciphers;
+        return $this;
+    }
+
+    public function setPeerFingerprint(array | string $fingerprint): static
+    {
+        $this->peerFingerprint = $fingerprint;
+        return $this;
+    }
+
+    public function capturePeerCertChain(bool $capture): static
+    {
+        $this->capturePeerCertChain = $capture;
+        return $this;
+    }
+
+    public function setExtra(string $name, mixed $value): static
+    {
+        $this->extra[$name] = $value;
+        return $this;
     }
 }

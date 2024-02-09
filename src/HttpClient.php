@@ -2,44 +2,42 @@
 
 namespace Efabrica\HttpClient;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpClient\CachingHttpClient;
+use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
+use Symfony\Component\HttpClient\TraceableHttpClient;
+use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
+use Symfony\Contracts\HttpClient\ResponseStreamInterface;
+use Symfony\Component\HttpKernel\HttpCache\StoreInterface;
 
-class HttpClient
+class HttpClient implements HttpClientInterface, LoggerAwareInterface
 {
     private HttpClientInterface $client;
 
-    private array $middlewares = [];
+    private TraceableHttpClient $traceClient;
 
-    public function __construct(
-        ?string $baseUrl = null,
-        ?string $bearerToken = null,
-        array $headers = [],
-        float $timeout = null,
-        float $maxDuration = null
-    ) {
-        $options = new HttpClientRequest(
-            headers: $headers, timeout: $timeout, maxDuration: $maxDuration, bearerToken: $bearerToken, baseUrl: $baseUrl
-        );
-        $this->client = \Symfony\Component\HttpClient\HttpClient::create($options->toOptionsArray());
+    private Stopwatch $stopwatch;
+
+    private ?CachingHttpClient $cachingClient = null;
+
+    public function __construct(HttpClientInterface $client)
+    {
+        $this->stopwatch = new Stopwatch(true);
+        $this->client = $this->traceClient = new TraceableHttpClient($client, $this->stopwatch);
     }
 
-    public function addMiddleware(HttpClientMiddleware $middleware, int $priority = 0): self
+    public static function create(HttpOptions $options, int $maxHostConnections = 6, int $maxPendingPushes = 50): self
     {
-        while (isset($this->middlewares[$priority])) {
-            $priority++;
-        }
-        $this->middlewares[$priority] = $middleware;
-        return $this;
+        return new self(SymfonyHttpClient::create($options->toArray(), $maxHostConnections, $maxPendingPushes));
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     */
-    public function request(HttpClientRequest $request): ResponseInterface
+    public function request(string $method, string $url, HttpOptions|array $options = []): ResponseInterface
     {
-        return (new RequestEvent($this->client, $this->middlewares, $request))->handle();
+        return $this->client->request($method, $url, $options instanceof HttpOptions ? $options->toArray() : $options);
     }
 
     /**
@@ -47,7 +45,7 @@ class HttpClient
      */
     public function get(string $url, array $urlQuery = [], array $headers = []): ResponseInterface
     {
-        return $this->request(new HttpClientRequest('GET', $url, urlQuery: $urlQuery, headers: $headers));
+        return $this->request('GET', $url, new HttpOptions(urlQuery: $urlQuery, headers: $headers));
     }
 
     /**
@@ -55,15 +53,15 @@ class HttpClient
      */
     public function post(string $url, array $json = [], array $headers = []): ResponseInterface
     {
-        return $this->request(new HttpClientRequest('POST', $url, jsonBody: $json, headers: $headers));
+        return $this->request('POST', $url, new HttpOptions(jsonBody: $json, headers: $headers));
     }
 
     /**
      * @throws TransportExceptionInterface
      */
-    public function postForm(string $url, array $form = [], array $headers = []): ResponseInterface
+    public function postForm(string $url, array $formData = [], array $headers = []): ResponseInterface
     {
-        return $this->request(new HttpClientRequest('POST', $url, formBody: $form, headers: $headers));
+        return $this->request('POST', $url, new HttpOptions(body: $formData, headers: $headers));
     }
 
     /**
@@ -71,7 +69,7 @@ class HttpClient
      */
     public function put(string $url, array $json = [], array $headers = []): ResponseInterface
     {
-        return $this->request(new HttpClientRequest('PUT', $url, jsonBody: $json, headers: $headers));
+        return $this->request('PUT', $url, new HttpOptions(jsonBody: $json, headers: $headers));
     }
 
     /**
@@ -79,7 +77,7 @@ class HttpClient
      */
     public function patch(string $url, array $json = [], array $headers = []): ResponseInterface
     {
-        return $this->request(new HttpClientRequest('PATCH', $url, jsonBody: $json, headers: $headers));
+        return $this->request('PATCH', $url, new HttpOptions(jsonBody: $json, headers: $headers));
     }
 
     /**
@@ -87,6 +85,42 @@ class HttpClient
      */
     public function delete(string $url, array $json = [], array $headers = []): ResponseInterface
     {
-        return $this->request(new HttpClientRequest('DELETE', $url, jsonBody: $json, headers: $headers));
+        return $this->request('DELETE', $url, new HttpOptions(jsonBody: $json, headers: $headers));
+    }
+
+    public function stream(iterable | ResponseInterface $responses, float $timeout = null): ResponseStreamInterface
+    {
+        return $this->client->stream($responses, $timeout);
+    }
+
+    public function withOptions(array|HttpOptions $options): static
+    {
+        $new = clone $this;
+        $new->client = $this->client->withOptions($options instanceof HttpOptions ? $options->toArray() : $options);
+        return $new;
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->traceClient->setLogger($logger);
+    }
+
+    public function getStopwatch(): Stopwatch
+    {
+        return $this->stopwatch;
+    }
+
+    /**
+     * You can use this to add more decorators, combined with getClient()
+     */
+    public function setClient(HttpClientInterface $client): self
+    {
+        $this->client = $client;
+        return $this;
+    }
+
+    public function getClient(): HttpClientInterface
+    {
+        return $this->client;
     }
 }
