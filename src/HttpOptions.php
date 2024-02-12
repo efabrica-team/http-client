@@ -18,16 +18,14 @@ class HttpOptions extends SymfonyHttpOptions
          */
         public array $urlQuery = [],
         /**
-         * @var mixed If set, implementations MUST set the "body" option to the JSON-encoded
-         *            value and set the "content-type" header to a JSON-compatible value if it is not
-         *            explicitly defined in the headers option - typically "application/json"
+         * @var mixed If set, implementations MUST set the "body" option to the JSON-encoded value and set the "content-type" header to a
+         * JSON-compatible value if it is not explicitly defined in the headers option - typically "application/json"
          */
         public ?array $jsonBody = null,
         /**
-         * @var array|string|resource|Traversable|Closure The callback SHOULD yield a string
-         *                                                  smaller than the amount requested as an argument; the empty
-         *                                                  string signals EOF; if an array is passed, it is meant as a
-         *                                                  form payload of field names and values
+         * @var array|string|resource|Traversable|Closure(int $size): string
+         * The callback SHOULD yield a string smaller than the amount requested as an argument; the empty string signals EOF;
+         * if an array is passed, it is meant as a form payload of field names and values
          */
         public mixed $body = null,
         /**
@@ -40,13 +38,12 @@ class HttpOptions extends SymfonyHttpOptions
         public float | null $timeout = null,
         /**
          * @var float The maximum execution time (in seconds) for the request+response as a whole,
-         *             a value lower than or equal to 0 means it is unlimited
+         *             a value lower than or equal to 0 means it is unlimited. Defaults to 0.
          */
-        public float $maxDuration = 0,
+        public ?float $maxDuration = null,
         /**
-         * @var array|string|null An array containing the username as the first value, and optionally the
-         *                       password as the second one; or string like username:password - enabling HTTP Basic
-         *                       authentication (RFC 7617)
+         * @var array|string|null An array containing the username as the first value, and optionally the password as the second one; or
+         *                          string like username:password - enabling HTTP Basic authentication (RFC 7617)
          */
         public array | string | null $basicAuth = null,
         /**

@@ -12,7 +12,6 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\HttpClient\ResponseStreamInterface;
-use Symfony\Component\HttpKernel\HttpCache\StoreInterface;
 
 class HttpClient implements HttpClientInterface, LoggerAwareInterface
 {
@@ -21,8 +20,6 @@ class HttpClient implements HttpClientInterface, LoggerAwareInterface
     private TraceableHttpClient $traceClient;
 
     private Stopwatch $stopwatch;
-
-    private ?CachingHttpClient $cachingClient = null;
 
     public function __construct(HttpClientInterface $client)
     {
@@ -35,7 +32,7 @@ class HttpClient implements HttpClientInterface, LoggerAwareInterface
         return new self(SymfonyHttpClient::create($options->toArray(), $maxHostConnections, $maxPendingPushes));
     }
 
-    public function request(string $method, string $url, HttpOptions|array $options = []): ResponseInterface
+    public function request(string $method, string $url, HttpOptions | array $options = []): ResponseInterface
     {
         return $this->client->request($method, $url, $options instanceof HttpOptions ? $options->toArray() : $options);
     }
@@ -43,7 +40,7 @@ class HttpClient implements HttpClientInterface, LoggerAwareInterface
     /**
      * @throws TransportExceptionInterface
      */
-    public function get(string $url, array $urlQuery = [], array $headers = []): ResponseInterface
+    public function get(string $url, array $urlQuery = [], array $headers = [], ?float $maxDuration = null): ResponseInterface
     {
         return $this->request('GET', $url, new HttpOptions(urlQuery: $urlQuery, headers: $headers));
     }
@@ -51,49 +48,77 @@ class HttpClient implements HttpClientInterface, LoggerAwareInterface
     /**
      * @throws TransportExceptionInterface
      */
-    public function post(string $url, array $json = [], array $headers = []): ResponseInterface
-    {
-        return $this->request('POST', $url, new HttpOptions(jsonBody: $json, headers: $headers));
+    public function post(
+        string $url,
+        array $urlQuery = [],
+        array $json = [],
+        array $formData = [],
+        array $headers = [],
+        ?float $maxDuration = null,
+        array $userData = []
+    ): ResponseInterface {
+        return $this->request('POST', $url,
+            new HttpOptions($urlQuery, $json, $formData, $headers, maxDuration: $maxDuration, userData: $userData)
+        );
     }
 
     /**
      * @throws TransportExceptionInterface
      */
-    public function postForm(string $url, array $formData = [], array $headers = []): ResponseInterface
-    {
-        return $this->request('POST', $url, new HttpOptions(body: $formData, headers: $headers));
+    public function put(
+        string $url,
+        array $urlQuery = [],
+        array $json = [],
+        array $formData = [],
+        array $headers = [],
+        ?float $maxDuration = null,
+        array $userData = []
+    ): ResponseInterface {
+        return $this->request('PUT', $url,
+            new HttpOptions($urlQuery, $json, $formData, $headers, maxDuration: $maxDuration, userData: $userData)
+        );
     }
 
     /**
      * @throws TransportExceptionInterface
      */
-    public function put(string $url, array $json = [], array $headers = []): ResponseInterface
-    {
-        return $this->request('PUT', $url, new HttpOptions(jsonBody: $json, headers: $headers));
+    public function patch(
+        string $url,
+        array $urlQuery = [],
+        array $json = [],
+        array $formData = [],
+        array $headers = [],
+        ?float $maxDuration = null,
+        array $userData = []
+    ): ResponseInterface {
+        return $this->request('PATCH', $url,
+            new HttpOptions($urlQuery, $json, $formData, $headers, maxDuration: $maxDuration, userData: $userData)
+        );
     }
 
     /**
      * @throws TransportExceptionInterface
      */
-    public function patch(string $url, array $json = [], array $headers = []): ResponseInterface
-    {
-        return $this->request('PATCH', $url, new HttpOptions(jsonBody: $json, headers: $headers));
+    public function delete(
+        string $url,
+        array $urlQuery = [],
+        array $json = [],
+        array $formData = [],
+        array $headers = [],
+        ?float $maxDuration = null,
+        array $userData = []
+    ): ResponseInterface {
+        return $this->request('DELETE', $url,
+            new HttpOptions($urlQuery, $json, $formData, $headers, maxDuration: $maxDuration, userData: $userData)
+        );
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     */
-    public function delete(string $url, array $json = [], array $headers = []): ResponseInterface
-    {
-        return $this->request('DELETE', $url, new HttpOptions(jsonBody: $json, headers: $headers));
-    }
-
-    public function stream(iterable | ResponseInterface $responses, float $timeout = null): ResponseStreamInterface
+    public function stream(iterable | ResponseInterface $responses, ?float $timeout = null): ResponseStreamInterface
     {
         return $this->client->stream($responses, $timeout);
     }
 
-    public function withOptions(array|HttpOptions $options): static
+    public function withOptions(array | HttpOptions $options): static
     {
         $new = clone $this;
         $new->client = $this->client->withOptions($options instanceof HttpOptions ? $options->toArray() : $options);
