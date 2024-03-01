@@ -1,6 +1,7 @@
 # efabrica/http-client
 
-**efabrica/http-client** is a PHP package that provides a simple and efficient HTTP client based on Symfony's HttpClient component. This package aims to simplify the process of making asynchronous HTTP requests and handling responses.
+**efabrica/http-client** is a PHP package that provides a simple and efficient HTTP client based on Symfony's HttpClient component. 
+It adds named arguments in constructor and methods, and provides a more statically analysable API for making HTTP requests.
 
 ## Installation
 
@@ -41,7 +42,7 @@ use Efabrica\HttpClient\HttpClient;
 $http = HttpClient::create('https://api.example.com', 'example_llt');
 
 // Send a GET request
-$response = $http->get('/resource');
+$response = $http->get('/resource', ['offset' => 0, 'limit' => 10]);
 
 // Send a POST request with JSON payload
 $response = $http->post('/resource', json: ['key' => 'value']);
@@ -50,7 +51,7 @@ $response = $http->post('/resource', json: ['key' => 'value']);
 $response = $http->post('/resource', body: ['key' => 'value']);
 
 // Send a PUT request
-$response = $http->put('https://api.example2.com/resource', ['query' => 'value']);
+$response = $http->put('https://api.example2.com/resource', ['email' => 'admin@example.com']);
 
 // ... other request methods
 ```
