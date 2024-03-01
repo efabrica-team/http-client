@@ -2,6 +2,8 @@
 
 namespace Efabrica\HttpClient;
 
+use Efabrica\HttpClient\Cache\CachedHttpClient;
+use Nette\Caching\Cache;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
@@ -12,18 +14,13 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\HttpClient\ResponseStreamInterface;
 
-class HttpClient implements HttpClientInterface, LoggerAwareInterface
+class HttpClient implements HttpClientInterface
 {
     private HttpClientInterface $client;
 
-    private TraceableHttpClient $traceClient;
-
-    private Stopwatch $stopwatch;
-
     public function __construct(HttpClientInterface $client)
     {
-        $this->stopwatch = new Stopwatch(true);
-        $this->client = $this->traceClient = new TraceableHttpClient($client, $this->stopwatch);
+        $this->client = $client;
     }
 
     public static function create(HttpOptions $options, int $maxHostConnections = 6, int $maxPendingPushes = 50): self
@@ -124,22 +121,12 @@ class HttpClient implements HttpClientInterface, LoggerAwareInterface
         return $new;
     }
 
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->traceClient->setLogger($logger);
-    }
-
-    public function getStopwatch(): Stopwatch
-    {
-        return $this->stopwatch;
-    }
-
     /**
      * You can use this to add more decorators, combined with getClient()
      */
-    public function setClient(HttpClientInterface $client): self
+    public function addDecorator(HttpClientInterface $decorator): self
     {
-        $this->client = $client;
+        $this->client = $decorator;
         return $this;
     }
 

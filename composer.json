@@ -19,6 +19,9 @@
         "symfony/stopwatch": "^6.4"
     },
     "require-dev": {
-        "symfony/http-kernel": "^6.4"
+        "symfony/http-kernel": "^6.4",
+        "tracy/tracy": "^2.10",
+        "latte/latte": "^3.0",
+        "nette/caching": "^3.2"
     }
 }
