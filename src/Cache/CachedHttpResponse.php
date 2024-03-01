@@ -5,11 +5,11 @@ namespace Efabrica\HttpClient\Cache;
 use Nette\Caching\Cache;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Contracts\HttpClient\ResponseInterface;
-use Throwable;
 
 class CachedHttpResponse implements ResponseInterface
 {
     public const CACHE_KEY = 'response';
+
     private bool $saved = false;
 
     public function __construct(

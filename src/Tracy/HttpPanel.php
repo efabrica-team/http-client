@@ -2,7 +2,6 @@
 
 namespace Efabrica\HttpClient\Tracy;
 
-use Efabrica\HttpClient\HttpClient;
 use Latte\Engine;
 use Symfony\Component\HttpClient\TraceableHttpClient;
 use Symfony\Component\Stopwatch\Stopwatch;
@@ -10,15 +9,10 @@ use Tracy\IBarPanel;
 
 class HttpPanel implements IBarPanel
 {
-    private Stopwatch $stopwatch;
-    private TraceableHttpClient $traceClient;
     private Engine $latte;
 
-    public function __construct(HttpClient $client)
+    public function __construct(private readonly TraceableHttpClient $client, private readonly Stopwatch $stopwatch)
     {
-        $this->stopwatch = new Stopwatch(true);
-        $this->traceClient = new TraceableHttpClient($client->getClient(), $this->stopwatch);
-        $client->addDecorator($this->traceClient);
         $this->latte = new Engine();
     }
 
@@ -37,7 +31,7 @@ class HttpPanel implements IBarPanel
     {
         return $this->latte->renderToString(__DIR__ . '/templates/http.tab.latte', [
             'duration' => $this->getTotalDuration(),
-            'requestCount' => count($this->traceClient->getTracedRequests()),
+            'requestCount' => count($this->client->getTracedRequests()),
         ]);
     }
 
@@ -45,9 +39,8 @@ class HttpPanel implements IBarPanel
     {
         return $this->latte->renderToString(__DIR__ . '/templates/http.tab.latte', [
             'duration' => $this->getTotalDuration(),
-            'requests' => $this->traceClient->getTracedRequests(),
+            'requests' => $this->client->getTracedRequests(),
             'stopwatch' => $this->stopwatch,
         ]);
     }
-
 }
