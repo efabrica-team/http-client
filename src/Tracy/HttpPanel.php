@@ -2,6 +2,7 @@
 
 namespace Efabrica\HttpClient\Tracy;
 
+use Efabrica\HttpClient\HttpClient;
 use Latte\Engine;
 use Symfony\Component\HttpClient\TraceableHttpClient;
 use Symfony\Component\Stopwatch\Stopwatch;

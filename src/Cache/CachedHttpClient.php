@@ -17,7 +17,7 @@ class CachedHttpClient implements HttpClientInterface, ResetInterface
 
     private Cache $cache;
 
-    public function __construct(Cache $cache, private HttpClientInterface $client)
+    public function __construct(Cache $cache, private readonly HttpClientInterface $client)
     {
         $this->cache = $cache->derive('http-client');
     }
