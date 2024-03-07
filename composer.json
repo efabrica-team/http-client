@@ -1,8 +1,8 @@
 {
     "name": "efabrica/http-client",
-    "description": "HTTP Client Abstraction",
+    "description": "HTTP Client with named parameters",
     "type": "library",
-    "license": "proprietary",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Efabrica\\HttpClient\\": "src/"

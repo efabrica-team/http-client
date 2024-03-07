@@ -2,7 +2,7 @@
 
 **efabrica/http-client** is a PHP package that provides a simple and efficient HTTP client based on Symfony's HttpClient component. 
 It adds named arguments in constructor and methods, and provides a more statically analysable API for making HTTP requests.
-It also integrates Nette's Cache and Debugger.
+If Symfony changes the HttpClient component, this package's effort will be to avoid breaking changes.
 
 ## Installation
 
