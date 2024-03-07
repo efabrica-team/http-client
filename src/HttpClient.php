@@ -46,10 +46,6 @@ final class HttpClient implements ResetInterface
      * @param int $maxHostConnections The maximum number of connections to a single host
      *
      * @param int $maxPendingPushes The maximum number of pushed responses to accept in the queue
-     *
-     * @return self
-     *
-     * @see https://php.net/context.ssl for information on SSL-related options.
      */
 
     public function __construct(

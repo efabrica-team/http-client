@@ -20,6 +20,8 @@ final class HttpAdvancedOptions
      * @param string|null $bindTo The interface or the local socket to bind to.
      *
      * @param bool|null $verifyPeer Set to true to enable peer verification
+     *
+     * @see https://php.net/context.ssl for information on SSL-related options.
      */
     public function __construct(
         private readonly string | null $httpVersion = null,
