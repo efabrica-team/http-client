@@ -1,6 +1,6 @@
 {
     "name": "efabrica/http-client",
-    "description": "HTTP Client with named parameters",
+    "description": "Wraps Symfony HTTP client, adds named arguments.",
     "type": "library",
     "license": "MIT",
     "autoload": {
@@ -10,7 +10,8 @@
     },
     "authors": [
         {
-            "name": "Richard Popelis"
+            "name": "Richard Popelis",
+            "email": "richard@popelis.sk"
         }
     ],
     "require": {
