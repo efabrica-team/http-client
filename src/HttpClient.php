@@ -6,6 +6,7 @@ use Closure;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
+use Symfony\Component\HttpClient\ScopingHttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\HttpClient\ResponseStreamInterface;
@@ -46,6 +47,10 @@ final class HttpClient implements ResetInterface
      * @param int $maxHostConnections The maximum number of connections to a single host
      *
      * @param int $maxPendingPushes The maximum number of pushed responses to accept in the queue
+     *
+     * @param bool $scoped Whether the auth options should be scoped to the base URI (Pre-caution to avoid leaking credentials)
+     *
+     * @param LoggerInterface|null $logger A PSR-3 logger
      */
 
     public function __construct(
@@ -58,9 +63,11 @@ final class HttpClient implements ResetInterface
         ?int $maxRedirects = null,
         Closure | null $onProgress = null,
         ?array $extra = null,
+        ?HttpAdvancedOptions $advanced = null,
+        OptionScope $scope = OptionScope::SCOPE_HEADERS,
+        ?HttpClientInterface $client = null,
         int $maxHostConnections = 6,
         int $maxPendingPushes = 50,
-        ?HttpAdvancedOptions $advanced = null,
         private readonly ?LoggerInterface $logger = null
     ) {
         $options = [
@@ -74,11 +81,23 @@ final class HttpClient implements ResetInterface
             'on_progress' => $onProgress,
             'extra' => $extra,
         ];
+        if ($advanced !== null) {
+            $options += $advanced->toArray();
+        }
+        $options = array_filter($options, static fn($v) => $v !== null);
 
-        $this->client = SymfonyHttpClient::create(
-            array_filter($options + ($advanced?->toArray() ?? []), static fn($v) => $v !== null),
-            $maxHostConnections, $maxPendingPushes
-        );
+        $scopedOptions = $scope->filter($options);
+        $options = array_diff_key($options, $scopedOptions);
+
+        if ($client !== null) {
+            $this->client = $client->withOptions($options);
+        } else {
+            $this->client = SymfonyHttpClient::create($options, $maxHostConnections, $maxPendingPushes);
+        }
+
+        if ($baseUrl !== null && $scopedOptions !== []) {
+            $this->client = ScopingHttpClient::forBaseUri($this->client, $baseUrl, $scopedOptions);
+        }
 
         if ($logger !== null && $this->client instanceof LoggerAwareInterface) {
             $this->client->setLogger($logger);
