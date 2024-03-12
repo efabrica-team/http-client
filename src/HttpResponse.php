@@ -6,7 +6,6 @@ use ArrayAccess;
 use JsonSerializable;
 use LogicException;
 use Serializable;
-use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
@@ -112,7 +111,7 @@ class HttpResponse implements ResponseInterface, Serializable, ArrayAccess, Json
      */
     public function getRedirectCount(): int
     {
-        return $this->response->getInfo('redirect_count');
+        return $this->response->getInfo('redirect_count') ?? 0;
     }
 
     /**
@@ -128,9 +127,9 @@ class HttpResponse implements ResponseInterface, Serializable, ArrayAccess, Json
     /**
      * Non-blocking. Get an array modeled after the $http_response_header variable containing response headers.
      *
-     * @return array<int, string> An array list with response headers as values and their order as keys.
+     * @return array<int, string>|null An array list with response headers as values and their order as keys.
      */
-    public function getResponseHeaders(): array
+    public function getResponseHeaders(): ?array
     {
         return $this->response->getInfo('response_headers');
     }
@@ -217,12 +216,12 @@ class HttpResponse implements ResponseInterface, Serializable, ArrayAccess, Json
 
     public function __unserialize(array $data): void
     {
-        $this->response = new MockResponse($data['content'], $data['info']);
+        $this->response = new SerializedResponse($data['content'], $data['info']);
     }
 
     public function unserialize(string $data): void
     {
-        $this->__unserialize(unserialize($data, false));
+        $this->__unserialize(unserialize($data, [false]));
     }
 
     public function __clone(): void

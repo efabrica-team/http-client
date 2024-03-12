@@ -82,20 +82,20 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      *      The value should be in the form of "interface:port" or "local_socket:port".
      *      Example: "192.168.1.2:0" or "unix:///var/run/local_socket.sock".
      *
-     * @param OptionScope $scope
-     *       Whether the auth options should be scoped to the base URI
-     *       (Precaution to avoid leaking credentials).
+     * @param SSLContext|null $ssl
+     *      SSL context options. If not provided (null), the default SSL context will be used.
+     *      Only the non-null SSL context options will be set.
      *
      * @param HttpClientInterface|null $client
-     *       The inner client, possibly decorated. Defaults to Symfony's HttpClient::create().
+     *      The inner client, possibly decorated. Defaults to Symfony's HttpClient::create().
      *
      * @param int $maxHostConnections
      *      The maximum number of connections to a single host.
-     *      Used only when the inner client is Symfony's HttpClient.
+     *      Used only when the inner client is Symfony's HttpClient (default).
      *
      * @param int $maxPendingPushes
      *      The maximum number of pushed responses to accept in the queue.
-     *      Used only when the inner client is Symfony's HttpClient.
+     *      Used only when the inner client is Symfony's HttpClient (default).
      *
      * @param LoggerInterface|null $logger
      *      A PSR-3 logger.
@@ -123,22 +123,22 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         private ?LoggerInterface $logger = null
     ) {
         $options = [
-            'base_uri' => $baseUri,
-            'auth_bearer' => $authBearer,
-            'auth_basic' => $authBasic,
-            'headers' => $headers,
-            'timeout' => $timeout,
-            'max_duration' => $maxDuration,
-            'max_redirects' => $maxRedirects,
-            'on_progress' => $onProgress,
-            'extra' => $extra,
-            'http_version' => $httpVersion,
-            'buffer' => $buffer,
-            'resolve' => $resolve,
-            'proxy' => $proxy,
-            'no_proxy' => $noProxy,
-            'bindto' => $bindTo,
-        ] + ($ssl?->toArray() ?? []);
+                'base_uri' => $baseUri,
+                'auth_bearer' => $authBearer,
+                'auth_basic' => $authBasic,
+                'headers' => $headers,
+                'timeout' => $timeout,
+                'max_duration' => $maxDuration,
+                'max_redirects' => $maxRedirects,
+                'on_progress' => $onProgress,
+                'extra' => $extra,
+                'http_version' => $httpVersion,
+                'buffer' => $buffer,
+                'resolve' => $resolve,
+                'proxy' => $proxy,
+                'no_proxy' => $noProxy,
+                'bindto' => $bindTo,
+            ] + ($ssl?->toArray() ?? []);
         $options = array_filter($options, static fn($v) => $v !== null);
 
         $client ??= SymfonyHttpClient::create($options, $maxHostConnections, $maxPendingPushes);
@@ -501,7 +501,9 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
             $client = $client->withOptions($options);
         }
         $this->client = $client;
-        $this->setLogger($this->logger);
+        if ($this->logger instanceof LoggerInterface) {
+            $this->setLogger($this->logger);
+        }
         return $this;
     }
 

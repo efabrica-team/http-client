@@ -2,7 +2,6 @@
 
 namespace Efabrica\HttpClient;
 
-
 final class SSLContext
 {
     /**
@@ -30,7 +29,6 @@ final class SSLContext
      * @param int|null       $cryptoMethod              Sets the crypto method. Available as of PHP 7.2.0. Defaults to null.
      *                                                   Example: OPENSSL_TLS1_2_METHOD
      */
-
     public function __construct(
         private readonly ?bool $verifyPeer = null,
         private readonly ?bool $verifyHost = null,

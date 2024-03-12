@@ -1,4 +1,4 @@
-# efabrica/http-client
+# eFabrica HTTP Client
 
 **efabrica/http-client** is a PHP package that provides a simple and efficient HTTP client based on Symfony's HttpClient component. 
 It adds named arguments in constructor and methods, and provides a more statically analysable API for making HTTP requests.
@@ -61,7 +61,7 @@ $response = $http->put('https://api.example2.com/resource', ['email' => 'admin@e
 
 ### Handling Asynchronous Responses
 
-The `HttpClient` class returns Symfony's asynchronous `ResponseInterface`. 
+The `HttpClient` class returns `HttpResponse` object which implements Symfony's `ResponseInterface`. 
 This allows you to work with responses asynchronously without blocking until their methods are called.
 
 ```php
@@ -74,7 +74,9 @@ $response = $http->get('https://api.example.com/resource');
 
 // Access response asynchronously
 // > Exceptions are thrown when the response is read
+$response->getHttpCode(); // int|null       (does not block, returns null if response code is not available yet)
 $response->getStatusCode(); // int          (blocks until response headers are available)
+$response->getResponseHeaders(); // array   (blocks until response headers are available)
 $response->getHeaders(); // array           (blocks until response headers are available) 
 $response->getContent(); // string          (blocks until response body is available)
 $response->toArray(); // JSON body as array (blocks until response body is available)
