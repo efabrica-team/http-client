@@ -28,8 +28,8 @@ $http = new HttpClient();
 
 // Create an instance with custom options
 $http = new HttpClient(
-    baseUrl: 'https://api.example.com',
-    bearerToken: 'your-access-token',
+    baseUri: 'https://api.example.com',
+    authBearer: 'your-access-token',
     timeout: 10.0,
     // ... other options
 );
@@ -57,35 +57,6 @@ $response = $http->post('/resource', body: ['key' => 'value']);
 $response = $http->put('https://api.example2.com/resource', ['email' => 'admin@example.com']);
 
 // ... other request methods
-```
-
-To be more specific, this is how the `post` method looks like:
-
-```php
-/**
- * @param string $url The URL to which the request should be sent.
- * @param array|null $query An associative array of query string values to merge with the request's URL.
- * @param array|null $json If set, the request body will be JSON-encoded, and the "content-type" header will be set to "application/json".
- * @param iterable|string|resource|Traversable|Closure $body The request body. array is treated as FormData.
- * @param iterable|null $headers Headers names provided as keys or as part of values.
- * @param float|null $timeout The idle timeout (in seconds) for the request.
- * @param float|null $maxDuration The maximum execution time (in seconds) for the request+response as a whole.
- * @param mixed $userData Any extra data to attach to the request that will be available via $response->getInfo('user_data').
- * @param Closure|null $onProgress A callable function to track the progress of the request.
- * @param array|null $extra Additional options for the request
- */
-public function post(
-    string $url,
-    ?array $query = null,
-    ?array $json = null,
-    mixed $body = null,
-    ?iterable $headers = null,
-    ?float $timeout = null,
-    ?float $maxDuration = null,
-    mixed $userData = null,
-    ?Closure $onProgress = null,
-    ?array $extra = null,
-): ResponseInterface
 ```
 
 ### Handling Asynchronous Responses
@@ -142,10 +113,10 @@ use Symfony\Component\HttpClient\Decorator\CachedHttpClient;
 $http = new HttpClient();
 
 // Add a decorator to the HTTP client
-$http->addDecorator(new CachedHttpClient($cache, $http->getClient()));
+$http->setClient(new CachedHttpClient($cache, $http->getClient()));
 
 // Create a new instance with an additional decorator
-$newHttpClient = $http->withDecorator(new CachedHttpClient($cache, $http->getClient()));
+$newHttpClient = $http->withClient(new CachedHttpClient($cache, $http->getClient()));
 ```
 
 ### Updating Options
