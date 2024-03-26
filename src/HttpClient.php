@@ -6,6 +6,7 @@ use Closure;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
+use Symfony\Component\HttpClient\Retry\RetryStrategyInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\HttpClient\ResponseStreamInterface;
@@ -17,8 +18,17 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
     private HttpClientInterface $client;
 
     /**
-     * @param string|null $baseUri
-     *      The URI to resolve relative URLs, following rules in RFC 3986, section 2.
+     * @param string|array<string|array<string>>|null $baseUri
+     *      - If a single URI is provided:
+     *         It represents the base URI for resolving relative URLs.
+     *      - If an array of URIs is provided:
+     *         Each URI in the array represents a base URI. The client will try these URIs in order,
+     *         using the next URI if the previous one fails.
+     *      - If a nested array is provided:
+     *         Each inner array represents a set of base URIs to choose from for retries.
+     *         The client will choose a random URI from each inner array for each retry attempt,
+     *         allowing for a randomized approach to handling retries and load distribution among nodes.
+     *      You can combine nesting and non-nesting to create a mix of these strategies.
      *
      * @param string|null $authBearer
      *      A token enabling HTTP Bearer authorization (RFC 6750).
@@ -86,6 +96,9 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      *      SSL context options. If not provided (null), the default SSL context will be used.
      *      Only the non-null SSL context options will be set.
      *
+     * @param RetryStrategy|null $retry
+     *     The retry strategy to use. If not provided (null), no retries will be attempted.
+     *
      * @param HttpClientInterface|null $client
      *      The inner client, possibly decorated. Defaults to Symfony's HttpClient::create().
      *
@@ -101,7 +114,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      *      A PSR-3 logger.
      */
     public function __construct(
-        ?string $baseUri = null,
+        array|string|null $baseUri = null,
         ?string $authBearer = null,
         ?float $timeout = null,
         ?float $maxDuration = null,
@@ -117,6 +130,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         ?string $noProxy = null,
         ?string $bindTo = null,
         ?SSLContext $ssl = null,
+        ?RetryStrategy $retry = null,
         ?HttpClientInterface $client = null,
         int $maxHostConnections = 6,
         int $maxPendingPushes = 50,
@@ -140,9 +154,14 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
                 'bindto' => $bindTo,
             ] + ($ssl?->toArray() ?? []);
         $options = array_filter($options, static fn($v) => $v !== null);
+        if (is_array($baseUri)) {
+            unset($options['base_uri']);
+            $retry ??= RetryStrategy::none();
+        }
 
         $client ??= SymfonyHttpClient::create($options, $maxHostConnections, $maxPendingPushes);
         $this->setClient($client, $options);
+        $retry?->addDecorator($this, $baseUri);
     }
 
     /**
