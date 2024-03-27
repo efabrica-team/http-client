@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [0.1.0] - 2024-03-27
-### Added
 - Initial release
 
-[0.1.0]: https://github.com/efabrica-team/http-client
+[Unreleased]: https://github.com/efabrica-team/http-client/compare/0.1.0...master
+[0.1.0]: https://github.com/efabrica-team/http-client/compare/...0.1.0
