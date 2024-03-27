@@ -29,11 +29,16 @@ class RetryStrategy implements RetryStrategyInterface
         float $jitter = 0.1
     ) {
         $this->strategy = new GenericRetryStrategy(
-            $statusCodes, $delayMs, $multiplier, $maxDelayMs, $jitter
+            $statusCodes,
+            $delayMs,
+            $multiplier,
+            $maxDelayMs,
+            $jitter
         );
     }
 
-    public static function custom(RetryStrategyInterface $strategy): self {
+    public static function custom(RetryStrategyInterface $strategy): self
+    {
         $instance = new self();
         $instance->strategy = $strategy;
         return $instance;
@@ -77,5 +82,4 @@ class RetryStrategy implements RetryStrategyInterface
     ): int {
         return $this->strategy->getDelay($context, $responseContent, $exception);
     }
-
 }
