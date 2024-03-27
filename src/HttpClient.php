@@ -5,8 +5,7 @@ namespace Efabrica\HttpClient;
 use Closure;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
-use Symfony\Component\HttpClient\Retry\RetryStrategyInterface;
+use Symfony\Component\HttpClient\AmpHttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\HttpClient\ResponseStreamInterface;
@@ -159,7 +158,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
             $retry ??= RetryStrategy::none();
         }
 
-        $client ??= SymfonyHttpClient::create($options, $maxHostConnections, $maxPendingPushes);
+        $client ??= new AmpHttpClient($options, null, $maxHostConnections, $maxPendingPushes);
         $this->setClient($client, $options);
         $retry?->addDecorator($this, $baseUri);
     }

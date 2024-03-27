@@ -17,12 +17,7 @@
     "require": {
         "php": ">=8.1",
         "symfony/http-client": "^6.4|^7.0",
-        "symfony/stopwatch": "^6.4|^7.0"
-    },
-    "require-dev": {
-        "symfony/http-kernel": "^6.4",
-        "tracy/tracy": "^2.10",
-        "latte/latte": "^3.0",
-        "nette/caching": "^3.2"
+        "symfony/stopwatch": "^6.4|^7.0",
+        "symfony/amphp-http-client-meta": "^1.0"
     }
 }
