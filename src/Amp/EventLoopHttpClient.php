@@ -2,6 +2,7 @@
 
 namespace Efabrica\HttpClient\Amp;
 
+use Generator;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\Response\AsyncResponse;
@@ -22,7 +23,10 @@ class EventLoopHttpClient implements HttpClientInterface, ResetInterface, Logger
 
     public function request(string $method, string $url, array $options = []): ResponseInterface
     {
-        return new AsyncResponse($this->client, $method, $url, $options, fn() => delay(self::DELAY));
+        return new AsyncResponse($this->client, $method, $url, $options, function () {
+            delay(self::DELAY);
+            return null;
+        });
     }
 
     public function stream(iterable|ResponseInterface $responses, float $timeout = null): ResponseStreamInterface
@@ -34,7 +38,7 @@ class EventLoopHttpClient implements HttpClientInterface, ResetInterface, Logger
         );
     }
 
-    private function loopStream(ResponseStreamInterface $stream): \Generator
+    private function loopStream(ResponseStreamInterface $stream): Generator
     {
         foreach ($stream as $response => $chunk) {
             yield $response => $chunk;

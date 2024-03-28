@@ -3,7 +3,6 @@
 namespace Efabrica\HttpClient;
 
 use Closure;
-use Efabrica\HttpClient\Amp\AmpCurlHttpClient;
 use Efabrica\HttpClient\Amp\EventLoopHttpClient;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
