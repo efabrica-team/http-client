@@ -17,7 +17,9 @@
     "require": {
         "php": ">=8.1",
         "symfony/http-client": "^6.4|^7.0",
-        "symfony/stopwatch": "^6.4|^7.0",
-        "symfony/amphp-http-client-meta": "^1.0"
+        "symfony/stopwatch": "^6.4|^7.0"
+    },
+    "suggest": {
+        "amphp/amp": "For event loop requests"
     }
 }
