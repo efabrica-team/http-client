@@ -3,14 +3,16 @@
 namespace Efabrica\HttpClient;
 
 use Closure;
-use Efabrica\HttpClient\Amp\EventLoopHttpClient;
+use Efabrica\HttpClient\Tracy\SharedTraceableHttpClient;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
+use Riki137\AmpClient\AmpHttpClientV5;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\HttpClient\ResponseStreamInterface;
 use Symfony\Contracts\Service\ResetInterface;
+use Tracy\Debugger;
 use Traversable;
 
 final class HttpClient implements ResetInterface, LoggerAwareInterface
@@ -119,9 +121,9 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         ?float $timeout = null,
         ?float $maxDuration = null,
         ?iterable $headers = null,
-        array | string | null $authBasic = null,
+        array|string|null $authBasic = null,
         ?int $maxRedirects = null,
-        Closure | null $onProgress = null,
+        Closure|null $onProgress = null,
         ?array $extra = null,
         ?string $httpVersion = null,
         mixed $buffer = null,
@@ -134,7 +136,8 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         ?HttpClientInterface $client = null,
         int $maxHostConnections = 6,
         int $maxPendingPushes = 50,
-        private ?LoggerInterface $logger = null
+        private ?LoggerInterface $logger = null,
+        ?bool $debug = null
     ) {
         $options = [
                 'base_uri' => $baseUri,
@@ -159,9 +162,15 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
             $retry ??= RetryStrategy::none();
         }
 
-        $client = SymfonyHttpClient::create($options, $maxHostConnections, $maxPendingPushes);
-        if (function_exists('Amp\delay')) {
-            $client = new EventLoopHttpClient($client);
+        if ($client === null) {
+            if (class_exists(AmpHttpClientV5::class)) {
+                $client = new AmpHttpClientV5($options, null, $maxHostConnections, $maxPendingPushes);
+            } else {
+                $client = SymfonyHttpClient::create($options, $maxHostConnections, $maxPendingPushes);
+            }
+        }
+        if ($debug !== false || (class_exists(Debugger::class) && Debugger::isEnabled())) {
+            $client = new SharedTraceableHttpClient($client);
         }
         $this->setClient($client, $options);
         $retry?->addDecorator($this, $baseUri);
@@ -286,7 +295,19 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         ?Closure $onProgress = null,
         ?array $extra = null,
     ): HttpResponse {
-        return $this->request('GET', $url, $query, $json, $body, $headers, $timeout, $maxDuration, $userData, $onProgress, $extra);
+        return $this->request(
+            'GET',
+            $url,
+            $query,
+            $json,
+            $body,
+            $headers,
+            $timeout,
+            $maxDuration,
+            $userData,
+            $onProgress,
+            $extra
+        );
     }
 
     /**
@@ -339,7 +360,19 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         ?Closure $onProgress = null,
         ?array $extra = null,
     ): HttpResponse {
-        return $this->request('POST', $url, $query, $json, $body, $headers, $timeout, $maxDuration, $userData, $onProgress, $extra);
+        return $this->request(
+            'POST',
+            $url,
+            $query,
+            $json,
+            $body,
+            $headers,
+            $timeout,
+            $maxDuration,
+            $userData,
+            $onProgress,
+            $extra
+        );
     }
 
     /**
@@ -392,7 +425,19 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         ?Closure $onProgress = null,
         ?array $extra = null,
     ): HttpResponse {
-        return $this->request('PUT', $url, $query, $json, $body, $headers, $timeout, $maxDuration, $userData, $onProgress, $extra);
+        return $this->request(
+            'PUT',
+            $url,
+            $query,
+            $json,
+            $body,
+            $headers,
+            $timeout,
+            $maxDuration,
+            $userData,
+            $onProgress,
+            $extra
+        );
     }
 
     /**
@@ -445,7 +490,19 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         ?Closure $onProgress = null,
         ?array $extra = null,
     ): HttpResponse {
-        return $this->request('PATCH', $url, $query, $json, $body, $headers, $timeout, $maxDuration, $userData, $onProgress, $extra);
+        return $this->request(
+            'PATCH',
+            $url,
+            $query,
+            $json,
+            $body,
+            $headers,
+            $timeout,
+            $maxDuration,
+            $userData,
+            $onProgress,
+            $extra
+        );
     }
 
     /**
@@ -498,7 +555,19 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         ?Closure $onProgress = null,
         ?array $extra = null,
     ): HttpResponse {
-        return $this->request('DELETE', $url, $query, $json, $body, $headers, $timeout, $maxDuration, $userData, $onProgress, $extra);
+        return $this->request(
+            'DELETE',
+            $url,
+            $query,
+            $json,
+            $body,
+            $headers,
+            $timeout,
+            $maxDuration,
+            $userData,
+            $onProgress,
+            $extra
+        );
     }
 
     /**
@@ -507,7 +576,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param ResponseInterface|iterable<array-key, ResponseInterface> $responses One or more responses created by the current HTTP client
      * @param float|null $timeout The idle timeout before yielding timeout chunks
      */
-    public function stream(ResponseInterface | iterable $responses, ?float $timeout = null): ResponseStreamInterface
+    public function stream(ResponseInterface|iterable $responses, ?float $timeout = null): ResponseStreamInterface
     {
         return $this->client->stream($responses, $timeout);
     }
@@ -546,22 +615,22 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * null means the option will not be changed.
      */
     public function withOptions(
-        string | false | null $baseUri = null,
-        string | false | null $authBearer = null,
-        float | false | null $timeout = null,
-        float | false | null $maxDuration = null,
-        iterable | false | null $headers = null,
-        array | string | null $authBasic = null,
-        int | false | null $maxRedirects = null,
-        Closure | false | null $onProgress = null,
-        array | false | null $extra = null,
-        string | false | null $httpVersion = null,
+        string|false|null $baseUri = null,
+        string|false|null $authBearer = null,
+        float|false|null $timeout = null,
+        float|false|null $maxDuration = null,
+        iterable|false|null $headers = null,
+        array|string|null $authBasic = null,
+        int|false|null $maxRedirects = null,
+        Closure|false|null $onProgress = null,
+        array|false|null $extra = null,
+        string|false|null $httpVersion = null,
         mixed $buffer = null,
-        array | false | null $resolve = null,
-        string | false | null $proxy = null,
-        string | false | null $noProxy = null,
-        string | false | null $bindTo = null,
-        SSLContext | false | null $ssl = null,
+        array|false|null $resolve = null,
+        string|false|null $proxy = null,
+        string|false|null $noProxy = null,
+        string|false|null $bindTo = null,
+        SSLContext|false|null $ssl = null,
     ): self {
         $options = [
             'base_uri' => $baseUri,

@@ -15,11 +15,17 @@
         }
     ],
     "require": {
-        "php": ">=8.1",
+        "php": "^8.2",
         "symfony/http-client": "^6.4|^7.0",
         "symfony/stopwatch": "^6.4|^7.0"
     },
     "suggest": {
-        "amphp/amp": "For event loop requests"
+        "riki137/amp-client": "for AMPHPv3 event loop support"
+    },
+    "require-dev": {
+        "tracy/tracy": "^2.10",
+        "latte/latte": "^3.0",
+        "amphp/amp": "^3.0",
+        "amphp/http-client": "^5.0"
     }
 }
