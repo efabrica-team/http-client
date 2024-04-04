@@ -3,6 +3,8 @@
 namespace Efabrica\HttpClient;
 
 use Closure;
+use Efabrica\HttpClient\Retry\ClientRetryStrategy;
+use Efabrica\HttpClient\Retry\RetryStrategy;
 use Efabrica\HttpClient\Tracy\SharedTraceableHttpClient;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -132,7 +134,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         ?string $noProxy = null,
         ?string $bindTo = null,
         ?SSLContext $ssl = null,
-        ?RetryStrategy $retry = null,
+        ?ClientRetryStrategy $retry = null,
         ?HttpClientInterface $client = null,
         int $maxHostConnections = 6,
         int $maxPendingPushes = 50,
@@ -159,7 +161,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         $options = array_filter($options, static fn($v) => $v !== null);
         if (is_array($baseUri)) {
             unset($options['base_uri']);
-            $retry ??= RetryStrategy::none();
+            $retry ??= new RetryStrategy(0);
         }
 
         if ($client === null) {
