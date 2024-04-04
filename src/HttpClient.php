@@ -100,8 +100,9 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      *      SSL context options. If not provided (null), the default SSL context will be used.
      *      Only the non-null SSL context options will be set.
      *
-     * @param RetryStrategy|null $retry
+     * @param ClientRetryStrategy|null $retry
      *     The retry strategy to use. If not provided (null), no retries will be attempted.
+     *     Use new RetryStrategy() or RetryStrategy::multi() or RetryStrategy::custom().
      *
      * @param HttpClientInterface|null $client
      *      The inner client, possibly decorated. Defaults to Symfony's HttpClient::create().
