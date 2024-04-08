@@ -14,16 +14,13 @@ use Symfony\Contracts\HttpClient\ResponseStreamInterface;
 class SharedTraceableHttpClient implements HttpClientInterface
 {
     /**
-     * @var Stopwatch[]
+     * @var TracedRequest[]
      */
-    private static array $stopwatches = [];
-
-    /**
-     * @var TraceableHttpClient[]
-     */
-    public static array $clients = [];
+    private static array $requests = [];
 
     private ?TraceableHttpClient $streamClient = null;
+
+    public static bool $defaultBuffer = false;
 
     public function __construct(private HttpClientInterface $client)
     {
@@ -34,20 +31,29 @@ class SharedTraceableHttpClient implements HttpClientInterface
         if (false === ($options['extra']['trace'] ?? true)) {
             return $this->client->request($method, $url, $options);
         }
+        if (($options['extra']['trace_content'] ?? self::$defaultBuffer) === true) {
+            $options['buffer'] = true;
+        }
 
-        self::$stopwatches[] = $stopwatch = new Stopwatch();
-        self::$clients[] = $client = new TraceableHttpClient($this->client, $stopwatch);
+        $stopwatch = new Stopwatch();
+        $client = new TraceableHttpClient($this->client, $stopwatch);
 
         $ref = new stdClass();
         $options['extra']['__ref'] = $ref;
         $response = $client->request($method, $url, $options);
         $ref->response = $response; // avoid early destruction of the response
 
+        self::$requests[] = new TracedRequest($client, $stopwatch, $response);
+
         return $response;
     }
 
     public function stream(iterable|ResponseInterface $responses, float $timeout = null): ResponseStreamInterface
     {
+        if ($this->client instanceof TraceableHttpClient) {
+            return $this->client->stream($responses, $timeout);
+        }
+
         $this->streamClient ??= new TraceableHttpClient($this->client);
         return $this->streamClient->stream($responses, $timeout);
     }
@@ -61,29 +67,8 @@ class SharedTraceableHttpClient implements HttpClientInterface
         return $clone;
     }
 
-    /**
-     * @return Generator<TracedRequest>
-     */
-    public static function getTracedRequests(): Generator
+    public static function getTracedRequests(): array
     {
-        foreach (self::$clients as $client) {
-            foreach ($client->getTracedRequests() as $request) {
-                yield new TracedRequest($request, $client);
-            }
-        }
-    }
-
-    /**
-     * @return Generator<StopwatchEvent>
-     */
-    public static function getEvents(): Generator
-    {
-        foreach (self::$stopwatches as $sw) {
-            foreach ($sw->getSections() as $section) {
-                foreach ($section->getEvents() as $event) {
-                    yield $event;
-                }
-            }
-        }
+        return self::$requests;
     }
 }

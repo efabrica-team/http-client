@@ -21,7 +21,7 @@ class HttpPanel implements IBarPanel
     public function getTab(): string
     {
         return $this->latte->renderToString(__DIR__ . '/templates/http.tab.latte', [
-            'requestCount' => $this->getRequestCount(),
+            'requestCount' => count(SharedTraceableHttpClient::getTracedRequests()),
         ]);
     }
 
@@ -29,19 +29,8 @@ class HttpPanel implements IBarPanel
     {
         return $this->latte->renderToString(__DIR__ . '/templates/http.panel.latte', [
             'requests' => SharedTraceableHttpClient::getTracedRequests(),
-            'events' => SharedTraceableHttpClient::getEvents(),
-            'requestCount' => $this->getRequestCount(),
             'startTime' => $this->startTime,
             'endTime' => microtime(true) * 1000,
         ]);
-    }
-
-    private function getRequestCount(): int
-    {
-        $count = 0;
-        foreach (SharedTraceableHttpClient::getTracedRequests() as $request) {
-            $count++;
-        }
-        return $count;
     }
 }

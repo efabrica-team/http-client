@@ -661,6 +661,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         if ($ssl === false) {
             $options += (new SSLContext())->toArray();
         }
+        bdump($options);
 
         return $this->withClient($this->client, $options);
     }

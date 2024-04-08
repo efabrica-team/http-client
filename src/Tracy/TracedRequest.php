@@ -2,22 +2,37 @@
 
 namespace Efabrica\HttpClient\Tracy;
 
+use Symfony\Component\HttpClient\Exception\TransportException;
+use Symfony\Component\HttpClient\TraceableHttpClient;
+use Symfony\Component\Stopwatch\Stopwatch;
+use Symfony\Component\Stopwatch\StopwatchEvent;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
+use Throwable;
 
 class TracedRequest
 {
-    public function __construct(private readonly array $data, private readonly HttpClientInterface $client)
+    public function __construct(
+        private readonly TraceableHttpClient $client,
+        private readonly Stopwatch $stopwatch,
+        private readonly ResponseInterface $response
+    ) {
+    }
+
+    public function getData(): array
     {
+        return current($this->client->getTracedRequests());
     }
 
     public function getMethod(): string
     {
-        return $this->data['method'];
+        return $this->getData()['method'];
     }
 
     public function getUrl(): string
     {
-        $url = $this->data['url'];
+        $url = $this->getData()['url'];
         if ($this->getOptions()['base_uri'] ?? false) {
             $url = rtrim($this->getOptions()['base_uri'], '/') . '/' . ltrim($url, '/');
         }
@@ -26,17 +41,33 @@ class TracedRequest
 
     public function getOptions(): array
     {
-        return $this->data['options'];
+        return $this->getData()['options'];
     }
 
     public function getInfo(): array
     {
-        return $this->data['info'];
+        return $this->getData()['info'];
     }
 
     public function getContent(): mixed
     {
-        return $this->data['content'] ?? null;
+        $content = $this->getData()['content'] ?? null;
+        try {
+            if ($this->getHeaders() === []) {
+                return $content;
+            }
+            $content ??= trim($this->response->getContent(false));
+            if (is_string($content) && ($content[0] === '{' || $content[0] === '[')) {
+                $content = json_decode($content, true) ?: $content;
+            }
+        }
+        catch (Throwable $e) {
+            if ($e instanceof TransportExceptionInterface && str_contains($e->getMessage(), 'buffering is disabled')) {
+                return null;
+            }
+            $content = get_class($e).': '.$e->getMessage() . "\n\n" . $e->getTraceAsString();
+        }
+        return $content;
     }
 
     public function getClient(): HttpClientInterface
@@ -44,17 +75,24 @@ class TracedRequest
         return $this->client;
     }
 
-    public function getTotalTime(): string
+    public function getStatus(): string
     {
-        $time = $this->data['info']['total_time'] ?? null;
-        if ($time === null) {
-            return 'N/A';
-        }
-        return round($time * 1000) . ' ms';
+        return current($this->getHeaders()) ?: 'Headers not received';
     }
 
-    public function getStatus(): ?string
+    public function getEvent(): ?StopwatchEvent
     {
-        return current($this->data['info']['response_headers'] ?? []) ?: 'Failed';
+        foreach ($this->stopwatch->getSections() as $section) {
+            foreach ($section->getEvents() as $event) {
+                return $event;
+            }
+        }
+        return null;
+    }
+
+    public function getHeaders(): mixed
+    {
+        $headers = $this->getData()['info']['response_headers'] ?? [];
+        return is_array($headers) ? $headers : [];
     }
 }
