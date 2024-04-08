@@ -2,7 +2,6 @@
 
 namespace Efabrica\HttpClient\Tracy;
 
-use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\TraceableHttpClient;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Stopwatch\StopwatchEvent;
@@ -60,12 +59,11 @@ class TracedRequest
             if (is_string($content) && ($content[0] === '{' || $content[0] === '[')) {
                 $content = json_decode($content, true) ?: $content;
             }
-        }
-        catch (Throwable $e) {
+        } catch (Throwable $e) {
             if ($e instanceof TransportExceptionInterface && str_contains($e->getMessage(), 'buffering is disabled')) {
                 return null;
             }
-            $content = get_class($e).': '.$e->getMessage() . "\n\n" . $e->getTraceAsString();
+            $content = get_class($e) . ': ' . $e->getMessage() . "\n\n" . $e->getTraceAsString();
         }
         return $content;
     }
