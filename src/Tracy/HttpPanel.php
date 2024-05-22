@@ -5,7 +5,7 @@ namespace Efabrica\HttpClient\Tracy;
 use Latte\Engine;
 use Tracy\IBarPanel;
 
-class HttpPanel implements IBarPanel
+final class HttpPanel implements IBarPanel
 {
     private Engine $latte;
 

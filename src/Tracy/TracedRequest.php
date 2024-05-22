@@ -10,7 +10,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 use Throwable;
 
-class TracedRequest
+final class TracedRequest
 {
     public function __construct(
         private readonly TraceableHttpClient $client,

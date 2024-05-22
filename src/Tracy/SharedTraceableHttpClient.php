@@ -8,8 +8,9 @@ use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\HttpClient\ResponseStreamInterface;
+use Tracy\Debugger;
 
-class SharedTraceableHttpClient implements HttpClientInterface
+final class SharedTraceableHttpClient implements HttpClientInterface
 {
     /**
      * @var TracedRequest[]
@@ -18,10 +19,11 @@ class SharedTraceableHttpClient implements HttpClientInterface
 
     private ?TraceableHttpClient $streamClient = null;
 
-    public static bool $defaultBuffer = false;
+    public static ?bool $defaultBuffer = null;
 
     public function __construct(private HttpClientInterface $client)
     {
+        self::$defaultBuffer ??= class_exists(Debugger::class) && Debugger::isEnabled();
     }
 
     public function request(string $method, string $url, array $options = []): ResponseInterface

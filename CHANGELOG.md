@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
-
+### Added
+- Rewrite of RetryStrategy - lots of code removed, made much simpler and cleaner. (BC Break)
+- Some classes were made final. (BC Break)
+- Content responses are now buffered by default if Tracy is enabled.
+### Removed
+- Deprecated RetryStrategy class is now removed.
 
 ## [0.2.4] - 2024-04-09
 ### Added

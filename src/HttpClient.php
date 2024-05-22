@@ -3,13 +3,13 @@
 namespace Efabrica\HttpClient;
 
 use Closure;
-use Efabrica\HttpClient\Retry\ClientRetryStrategy;
-use Efabrica\HttpClient\Retry\RetryStrategy;
+use Efabrica\HttpClient\Retry\MutableRetryableHttpClient;
 use Efabrica\HttpClient\Tracy\SharedTraceableHttpClient;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Riki137\AmpClient\AmpHttpClientV5;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
+use Symfony\Component\HttpClient\Retry\RetryStrategyInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\HttpClient\ResponseStreamInterface;
@@ -100,9 +100,13 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      *      SSL context options. If not provided (null), the default SSL context will be used.
      *      Only the non-null SSL context options will be set.
      *
-     * @param ClientRetryStrategy|null $retry
-     *     The retry strategy to use. If not provided (null), no retries will be attempted.
-     *     Use new RetryStrategy() or RetryStrategy::multi() or RetryStrategy::custom().
+     * @param RetryStrategyInterface|null $retry
+     *     The retry strategy to use. If not provided and $maxRetries is greater than 0,
+     *     a default Symfony's GenericRetryStrategy will be used.
+     *
+     * @param int $maxRetries
+     *     The maximum number of retries to attempt. Defaults to 0.
+     *     This is used in combination with the retry strategy.
      *
      * @param HttpClientInterface|null $client
      *      The inner client, possibly decorated. Defaults to Symfony's HttpClient::create().
@@ -135,7 +139,8 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         ?string $noProxy = null,
         ?string $bindTo = null,
         ?SSLContext $ssl = null,
-        ?ClientRetryStrategy $retry = null,
+        ?RetryStrategyInterface $retry = null,
+        int $maxRetries = 0,
         ?HttpClientInterface $client = null,
         int $maxHostConnections = 6,
         int $maxPendingPushes = 50,
@@ -160,10 +165,6 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
                 'bindto' => $bindTo,
             ] + ($ssl?->toArray() ?? []);
         $options = array_filter($options, static fn($v) => $v !== null);
-        if (is_array($baseUri)) {
-            unset($options['base_uri']);
-            $retry ??= new RetryStrategy(0);
-        }
 
         if ($client === null) {
             if (class_exists(AmpHttpClientV5::class)) {
@@ -171,12 +172,13 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
             } else {
                 $client = SymfonyHttpClient::create($options, $maxHostConnections, $maxPendingPushes);
             }
+            $options = [];
         }
         if ($debug !== false || (class_exists(Debugger::class) && Debugger::isEnabled())) {
             $client = new SharedTraceableHttpClient($client);
         }
+        $client = new MutableRetryableHttpClient($client, $retry, $maxRetries, $logger, $baseUri);
         $this->setClient($client, $options);
-        $retry?->addDecorator($this, $baseUri);
     }
 
     /**
@@ -612,7 +614,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
     }
 
     /**
-     * @see self::create() for the list of available options
+     * @see self::__construct() for the list of available options
      * Use false to reset option to default. (remove it from the options)
      * This does not apply to $buffer as false is a valid value.
      * null means the option will not be changed.
@@ -633,7 +635,9 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         string|false|null $proxy = null,
         string|false|null $noProxy = null,
         string|false|null $bindTo = null,
-        SSLContext|false|null $ssl = null,
+        SSLContext|null $ssl = null,
+        RetryStrategyInterface|false $retry = null,
+        int|null $maxRetries = null,
     ): self {
         $options = [
             'base_uri' => $baseUri,
@@ -650,17 +654,13 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
             'proxy' => $proxy,
             'no_proxy' => $noProxy,
             'bindto' => $bindTo,
-        ];
-        if ($ssl instanceof SSLContext) {
-            $options += $ssl->toArray();
-        }
+            'retry_strategy' => $retry,
+            'max_retries' => $maxRetries,
+        ] + ($ssl?->toArray() ?? []);
         $options = array_filter($options, static fn($v) => $v !== null);
         // convert false values to null values
         $options = array_map(static fn($v) => $v === false ? null : $v, $options);
         $options['buffer'] = $buffer;
-        if ($ssl === false) {
-            $options += (new SSLContext())->toArray();
-        }
 
         return $this->withClient($this->client, $options);
     }

@@ -16,7 +16,7 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
  *  - blocking JsonSerializable implementation
  *  - makes response serializable (by blocking and waiting for the response content)
  */
-class HttpResponse implements ResponseInterface, Serializable, ArrayAccess, JsonSerializable
+final class HttpResponse implements ResponseInterface, Serializable, ArrayAccess, JsonSerializable
 {
     private ?array $jsonData = null;
 
