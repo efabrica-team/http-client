@@ -3,14 +3,15 @@ declare(strict_types=1);
 
 namespace Efabrica\HttpClient\Retry;
 
+use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\DecoratorTrait;
 use Symfony\Component\HttpClient\Retry\RetryStrategyInterface;
-use Symfony\Component\HttpClient\RetryableHttpClient;
+use Symfony\Component\HttpClient\RetryableHttpClient as SfRetryableHttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Service\ResetInterface;
 
-final class MutableRetryableHttpClient implements HttpClientInterface, ResetInterface
+final class RetryableHttpClient implements HttpClientInterface, ResetInterface, LoggerAwareInterface
 {
     use DecoratorTrait;
 
@@ -26,7 +27,7 @@ final class MutableRetryableHttpClient implements HttpClientInterface, ResetInte
         $this->rawClient = $client;
 
         if ($strategy !== null || is_array($baseUri) || $maxRetries > 0) {
-            $this->client = new RetryableHttpClient($client, $strategy, $maxRetries, $logger);
+            $this->client = new SfRetryableHttpClient($client, $strategy, $maxRetries, $logger);
 
             if (is_array($baseUri)) {
                 $this->client = $this->client->withOptions(['base_uri' => $baseUri]);
@@ -48,6 +49,14 @@ final class MutableRetryableHttpClient implements HttpClientInterface, ResetInte
         }
 
         $newClient = $this->rawClient->withOptions($options);
-        return new static($newClient, $strategy, $maxRetries, $this->logger, $baseUri);
+        return new self($newClient, $strategy, $maxRetries, $this->logger, $baseUri);
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+        if ($this->client instanceof LoggerAwareInterface) {
+            $this->client->setLogger($logger);
+        }
     }
 }

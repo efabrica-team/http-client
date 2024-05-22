@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Some classes were made final. (BC Break)
 - Content responses are now buffered by default if Tracy is enabled.
 ### Removed
-- Deprecated RetryStrategy class is now removed.
+- Deprecated RetryStrategy class is now removed. (BC Break)
+- SSLContext cannot be false in withOptions anymore. It must be null or an instance of SSLContext. (BC Break)
 
 ## [0.2.4] - 2024-04-09
 ### Added

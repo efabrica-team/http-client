@@ -3,7 +3,7 @@
 namespace Efabrica\HttpClient;
 
 use Closure;
-use Efabrica\HttpClient\Retry\MutableRetryableHttpClient;
+use Efabrica\HttpClient\Retry\RetryableHttpClient;
 use Efabrica\HttpClient\Tracy\SharedTraceableHttpClient;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -113,11 +113,11 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      *
      * @param int $maxHostConnections
      *      The maximum number of connections to a single host.
-     *      Used only when the inner client is Symfony's HttpClient (default).
+     *      Used only when inner client is not specified.
      *
      * @param int $maxPendingPushes
      *      The maximum number of pushed responses to accept in the queue.
-     *      Used only when the inner client is Symfony's HttpClient (default).
+     *       Used only when inner client is not specified.
      *
      * @param LoggerInterface|null $logger
      *      A PSR-3 logger.
@@ -177,7 +177,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         if ($debug !== false || (class_exists(Debugger::class) && Debugger::isEnabled())) {
             $client = new SharedTraceableHttpClient($client);
         }
-        $client = new MutableRetryableHttpClient($client, $retry, $maxRetries, $logger, $baseUri);
+        $client = new RetryableHttpClient($client, $retry, $maxRetries, $logger, $baseUri);
         $this->setClient($client, $options);
     }
 
