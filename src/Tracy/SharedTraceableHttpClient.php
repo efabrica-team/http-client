@@ -8,8 +8,12 @@ use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Contracts\HttpClient\ResponseStreamInterface;
+use Tracy\Debugger;
 
-class SharedTraceableHttpClient implements HttpClientInterface
+/**
+ * This client accumulates all requests made by it into a static variable that can be later used for debugging.
+ */
+final class SharedTraceableHttpClient implements HttpClientInterface
 {
     /**
      * @var TracedRequest[]
@@ -18,12 +22,17 @@ class SharedTraceableHttpClient implements HttpClientInterface
 
     private ?TraceableHttpClient $streamClient = null;
 
-    public static bool $defaultBuffer = false;
+    public static ?bool $defaultBuffer = null;
 
     public function __construct(private HttpClientInterface $client)
     {
+        self::$defaultBuffer ??= class_exists(Debugger::class) && Debugger::isEnabled();
     }
 
+    /**
+     * @param array<string, mixed> $options
+     * @see HttpClientInterface::OPTIONS_DEFAULTS for options
+     */
     public function request(string $method, string $url, array $options = []): ResponseInterface
     {
         if (false === ($options['extra']['trace'] ?? true)) {
@@ -56,6 +65,10 @@ class SharedTraceableHttpClient implements HttpClientInterface
         return $this->streamClient->stream($responses, $timeout);
     }
 
+    /**
+     * @param array<string, mixed> $options
+     * @see HttpClientInterface::OPTIONS_DEFAULTS for options
+     */
     public function withOptions(array $options): static
     {
         $clone = clone $this;
@@ -65,6 +78,9 @@ class SharedTraceableHttpClient implements HttpClientInterface
         return $clone;
     }
 
+    /**
+     * @return TracedRequest[]
+     */
     public static function getTracedRequests(): array
     {
         return self::$requests;

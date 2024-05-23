@@ -115,10 +115,10 @@ use Symfony\Component\HttpClient\Decorator\CachedHttpClient;
 $http = new HttpClient();
 
 // Add a decorator to the HTTP client
-$http->setClient(new CachedHttpClient($cache, $http->getClient()));
+$http->setClient(new BlackfiredHttpClient($http->getClient(), $blackfire));
 
 // Create a new instance with an additional decorator
-$newHttpClient = $http->withClient(new CachedHttpClient($cache, $http->getClient()));
+$blackfiredClient = $http->withClient(new BlackfiredHttpClient($http->getClient(), $blackfire));
 ```
 
 ### Updating Options

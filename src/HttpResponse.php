@@ -6,6 +6,11 @@ use ArrayAccess;
 use JsonSerializable;
 use LogicException;
 use Serializable;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
@@ -15,9 +20,11 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
  *  - blocking ArrayAccess implementation that is cached after the first access
  *  - blocking JsonSerializable implementation
  *  - makes response serializable (by blocking and waiting for the response content)
+ * @implements ArrayAccess<string, mixed>
  */
-class HttpResponse implements ResponseInterface, Serializable, ArrayAccess, JsonSerializable
+final class HttpResponse implements ResponseInterface, Serializable, ArrayAccess, JsonSerializable
 {
+    /** @var mixed[]|null  */
     private ?array $jsonData = null;
 
     public function __construct(private ResponseInterface $response)
@@ -47,6 +54,15 @@ class HttpResponse implements ResponseInterface, Serializable, ArrayAccess, Json
         return $this->response->getContent($throw);
     }
 
+    /**
+     * @param bool $throw Throw on 300+ HTTP status codes
+     * @return mixed[]
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
     public function toArray(bool $throw = true): array
     {
         // Blocks until the response content is received
@@ -209,11 +225,22 @@ class HttpResponse implements ResponseInterface, Serializable, ArrayAccess, Json
         return serialize($this->__serialize());
     }
 
+    /**
+     * @return mixed[]
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();
     }
 
+    /**
+     * @param array<"content"|"info", mixed> $data
+     */
     public function __unserialize(array $data): void
     {
         $this->response = new SerializedResponse($data['content'], $data['info']);

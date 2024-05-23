@@ -10,7 +10,10 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 use Throwable;
 
-class TracedRequest
+/**
+ * This class represents a single request made by the SharedTraceableHttpClient.
+ */
+final class TracedRequest
 {
     public function __construct(
         private readonly TraceableHttpClient $client,
@@ -19,6 +22,9 @@ class TracedRequest
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getData(): array
     {
         return current($this->client->getTracedRequests());
@@ -38,11 +44,17 @@ class TracedRequest
         return $url;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getOptions(): array
     {
         return $this->getData()['options'];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getInfo(): array
     {
         return $this->getData()['info'];

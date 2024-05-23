@@ -2,6 +2,10 @@
 
 namespace Efabrica\HttpClient;
 
+/**
+ * SSLContext represents the SSL context options for the HttpClient.
+ * It groups all the SSL-related options in a single object, to avoid having too many rarely used parameters in the HttpClient.
+ */
 final class SSLContext
 {
     /**
@@ -53,6 +57,9 @@ final class SSLContext
         return new self(verifyPeer: !$insecure, verifyHost: !$insecure);
     }
 
+    /**
+     * @return array<string,bool|string|int|null>
+     */
     public function toArray(): array
     {
         return [
