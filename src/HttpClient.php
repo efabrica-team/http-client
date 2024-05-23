@@ -214,7 +214,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param mixed $userData
      *      Additional data to attach to the request, accessible via $response->getInfo('user_data').
      *
-     * @param Closure|null $onProgress
+     * @param Closure(int $dlNow, int $dlSize, array<string, mixed> $info): mixed|null $onProgress
      *      A callable function to monitor the progress of the request.
      *
      * @param array<string, mixed>|null $extra
@@ -281,7 +281,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param mixed $userData
      *      Additional data to attach to the request, accessible via $response->getInfo('user_data').
      *
-     * @param Closure|null $onProgress
+     * @param Closure(int $dlNow, int $dlSize, array<string, mixed> $info): mixed|null $onProgress
      *      A callable function to monitor the progress of the request.
      *
      * @param array<string, mixed>|null $extra
@@ -347,7 +347,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param mixed $userData
      *      Additional data to attach to the request, accessible via $response->getInfo('user_data').
      *
-     * @param Closure|null $onProgress
+     * @param Closure(int $dlNow, int $dlSize, array<string, mixed> $info): mixed|null $onProgress
      *      A callable function to monitor the progress of the request.
      *
      * @param array<string, mixed>|null $extra
@@ -413,7 +413,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param mixed $userData
      *      Additional data to attach to the request, accessible via $response->getInfo('user_data').
      *
-     * @param Closure|null $onProgress
+     * @param Closure(int $dlNow, int $dlSize, array<string, mixed> $info): mixed|null $onProgress
      *      A callable function to monitor the progress of the request.
      *
      * @param array<string, mixed>|null $extra
@@ -479,7 +479,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param mixed $userData
      *      Additional data to attach to the request, accessible via $response->getInfo('user_data').
      *
-     * @param Closure|null $onProgress
+     * @param Closure(int $dlNow, int $dlSize, array<string, mixed> $info): mixed|null $onProgress
      *      A callable function to monitor the progress of the request.
      *
      * @param array<string, mixed>|null $extra
@@ -545,7 +545,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param mixed $userData
      *      Additional data to attach to the request, accessible via $response->getInfo('user_data').
      *
-     * @param Closure|null $onProgress
+     * @param Closure(int $dlNow, int $dlSize, array<string, mixed> $info): mixed|null $onProgress
      *      A callable function to monitor the progress of the request.
      *
      * @param array<string, mixed>|null $extra
@@ -630,13 +630,16 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * This does not apply to $buffer as false is a valid value.
      * null means the option will not be changed.
      *
+     * @param array<string|string[]>|string|false|null $baseUri
      * @param iterable<int|string, string>|false|null $headers
      * @param array{0: string, 1?: string|null}|string|false|null $authBasic
+     * @param Closure(int $dlNow, int $dlSize, array<string, mixed> $info): mixed|false|null $onProgress
      * @param array<string, mixed>|false|null $extra
+     * @param resource|bool|null|Closure(iterable<int|string, string> $headers): bool $buffer
      * @param array<string, string>|null $resolve
      */
     public function withOptions(
-        string|false|null $baseUri = null,
+        array|string|false|null $baseUri = null,
         string|false|null $authBearer = null,
         float|false|null $timeout = null,
         float|false|null $maxDuration = null,
