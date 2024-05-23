@@ -56,23 +56,23 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      *      The maximum number of redirects to follow; a value lower than or equal to
      *      means redirects should not be followed.
      *
-     * @param ?Closure(int $dlNow, int $dlSize, array $info): mixed $onProgress
+     * @param ?Closure(int $dlNow, int $dlSize, array<string, mixed> $info): mixed $onProgress
      *      A callable that MUST be called on DNS resolution,
      *      on arrival of headers, on completion, and SHOULD be called on upload/download
      *      of data and at least 1/s. Throwing any exceptions MUST abort the request.
      *
-     * @param array|null $extra
+     * @param array<string, mixed>|null $extra
      *      Additional options that can be ignored if unsupported, unlike regular options.
      *
      * @param string|null $httpVersion
      *      The HTTP version to use, defaults to the best supported version, typically 1.1 or 2.0.
      *
-     * @param resource|bool|null|Closure(array $headers): bool $buffer
+     * @param resource|bool|null|Closure(iterable<int|string, string> $headers): bool $buffer
      *      Whether the content of the response should be buffered or not, or a stream resource
      *      where the response body should be written, or a closure telling if/where
      *      the response should be buffered based on its headers.
      *
-     * @param array|null $resolve
+     * @param array<string, string>|null $resolve
      *      A map of host to IP address that should replace DNS resolution.
      *      Each key-value pair in the array represents a mapping where the key is the host
      *      to be resolved, and the value is the corresponding IP address to use instead of DNS.
@@ -168,6 +168,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
 
         if ($client === null) {
             if (class_exists(AmpHttpClientV5::class)) {
+                /** @var HttpClientInterface $client */
                 $client = new AmpHttpClientV5($options, null, $maxHostConnections, $maxPendingPushes);
             } else {
                 $client = SymfonyHttpClient::create($options, $maxHostConnections, $maxPendingPushes);
@@ -190,17 +191,18 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param string $url
      *      The target URL to which the HTTP request should be sent.
      *
-     * @param array|null $query
+     * @param array<string,mixed>|null $query
      *      An associative array of query string values to be merged with the request's URL.
      *
-     * @param array|null $json
+     * @param mixed|null $json
      *      If set, the request body will be JSON-encoded, and the "content-type" header will be set to "application/json".
      *
-     * @param iterable|string|resource|Traversable|Closure(int $size): string $body
+     * @param mixed[]|string|resource|Traversable<mixed>|Closure(int $size): string $body
      *      The request body. An array is treated as FormData.
      *      If a Closure is provided, it should return a string smaller than the specified size argument.
+     *      Traversable is treated as a stream resource.
      *
-     * @param iterable|null $headers
+     * @param iterable<int|string, string>|null $headers
      *      Headers, provided as keys or as part of values, to be included in the HTTP request.
      *
      * @param float|null $timeout
@@ -215,7 +217,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param Closure|null $onProgress
      *      A callable function to monitor the progress of the request.
      *
-     * @param array|null $extra
+     * @param array<string, mixed>|null $extra
      *      Additional options for fine-tuning the request.
      *
      * @return HttpResponse
@@ -226,7 +228,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         string $method,
         string $url,
         ?array $query = null,
-        ?array $json = null,
+        mixed $json = null,
         mixed $body = null,
         ?iterable $headers = null,
         ?float $timeout = null,
@@ -256,17 +258,18 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param string $url
      *      The target URL to which the HTTP request should be sent.
      *
-     * @param array|null $query
+     * @param array<string,mixed>|null $query
      *      An associative array of query string values to be merged with the request's URL.
      *
-     * @param array|null $json
+     * @param mixed|null $json
      *      If set, the request body will be JSON-encoded, and the "content-type" header will be set to "application/json".
      *
-     * @param iterable|string|resource|Traversable|Closure(int $size): string $body
+     * @param mixed[]|string|resource|Traversable<mixed>|Closure(int $size): string $body
      *      The request body. An array is treated as FormData.
      *      If a Closure is provided, it should return a string smaller than the specified size argument.
+     *      Traversable is treated as a stream resource.
      *
-     * @param iterable|null $headers
+     * @param iterable<int|string, string>|null $headers
      *      Headers, provided as keys or as part of values, to be included in the HTTP request.
      *
      * @param float|null $timeout
@@ -281,7 +284,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param Closure|null $onProgress
      *      A callable function to monitor the progress of the request.
      *
-     * @param array|null $extra
+     * @param array<string, mixed>|null $extra
      *      Additional options for fine-tuning the request.
      *
      * @return HttpResponse
@@ -291,7 +294,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
     public function get(
         string $url,
         ?array $query = null,
-        ?array $json = null,
+        mixed $json = null,
         mixed $body = null,
         ?iterable $headers = null,
         ?float $timeout = null,
@@ -321,17 +324,18 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param string $url
      *      The target URL to which the HTTP request should be sent.
      *
-     * @param array|null $query
+     * @param array<string,mixed>|null $query
      *      An associative array of query string values to be merged with the request's URL.
      *
-     * @param array|null $json
+     * @param mixed|null $json
      *      If set, the request body will be JSON-encoded, and the "content-type" header will be set to "application/json".
      *
-     * @param iterable|string|resource|Traversable|Closure(int $size): string $body
+     * @param mixed[]|string|resource|Traversable<mixed>|Closure(int $size): string $body
      *      The request body. An array is treated as FormData.
      *      If a Closure is provided, it should return a string smaller than the specified size argument.
+     *      Traversable is treated as a stream resource.
      *
-     * @param iterable|null $headers
+     * @param iterable<int|string, string>|null $headers
      *      Headers, provided as keys or as part of values, to be included in the HTTP request.
      *
      * @param float|null $timeout
@@ -346,7 +350,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param Closure|null $onProgress
      *      A callable function to monitor the progress of the request.
      *
-     * @param array|null $extra
+     * @param array<string, mixed>|null $extra
      *      Additional options for fine-tuning the request.
      *
      * @return HttpResponse
@@ -356,7 +360,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
     public function post(
         string $url,
         ?array $query = null,
-        ?array $json = null,
+        mixed $json = null,
         mixed $body = null,
         ?iterable $headers = null,
         ?float $timeout = null,
@@ -386,17 +390,18 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param string $url
      *      The target URL to which the HTTP request should be sent.
      *
-     * @param array|null $query
+     * @param array<string,mixed>|null $query
      *      An associative array of query string values to be merged with the request's URL.
      *
-     * @param array|null $json
+     * @param mixed|null $json
      *      If set, the request body will be JSON-encoded, and the "content-type" header will be set to "application/json".
      *
-     * @param iterable|string|resource|Traversable|Closure(int $size): string $body
+     * @param mixed[]|string|resource|Traversable<mixed>|Closure(int $size): string $body
      *      The request body. An array is treated as FormData.
      *      If a Closure is provided, it should return a string smaller than the specified size argument.
+     *      Traversable is treated as a stream resource.
      *
-     * @param iterable|null $headers
+     * @param iterable<int|string, string>|null $headers
      *      Headers, provided as keys or as part of values, to be included in the HTTP request.
      *
      * @param float|null $timeout
@@ -411,7 +416,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param Closure|null $onProgress
      *      A callable function to monitor the progress of the request.
      *
-     * @param array|null $extra
+     * @param array<string, mixed>|null $extra
      *      Additional options for fine-tuning the request.
      *
      * @return HttpResponse
@@ -421,7 +426,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
     public function put(
         string $url,
         ?array $query = null,
-        ?array $json = null,
+        mixed $json = null,
         mixed $body = null,
         ?iterable $headers = null,
         ?float $timeout = null,
@@ -451,17 +456,18 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param string $url
      *      The target URL to which the HTTP request should be sent.
      *
-     * @param array|null $query
+     * @param array<string,mixed>|null $query
      *      An associative array of query string values to be merged with the request's URL.
      *
-     * @param array|null $json
+     * @param mixed|null $json
      *      If set, the request body will be JSON-encoded, and the "content-type" header will be set to "application/json".
      *
-     * @param iterable|string|resource|Traversable|Closure(int $size): string $body
+     * @param mixed[]|string|resource|Traversable<mixed>|Closure(int $size): string $body
      *      The request body. An array is treated as FormData.
      *      If a Closure is provided, it should return a string smaller than the specified size argument.
+     *      Traversable is treated as a stream resource.
      *
-     * @param iterable|null $headers
+     * @param iterable<int|string, string>|null $headers
      *      Headers, provided as keys or as part of values, to be included in the HTTP request.
      *
      * @param float|null $timeout
@@ -476,7 +482,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param Closure|null $onProgress
      *      A callable function to monitor the progress of the request.
      *
-     * @param array|null $extra
+     * @param array<string, mixed>|null $extra
      *      Additional options for fine-tuning the request.
      *
      * @return HttpResponse
@@ -486,7 +492,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
     public function patch(
         string $url,
         ?array $query = null,
-        ?array $json = null,
+        mixed $json = null,
         mixed $body = null,
         ?iterable $headers = null,
         ?float $timeout = null,
@@ -516,17 +522,18 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param string $url
      *      The target URL to which the HTTP request should be sent.
      *
-     * @param array|null $query
+     * @param array<string,mixed>|null $query
      *      An associative array of query string values to be merged with the request's URL.
      *
-     * @param array|null $json
+     * @param mixed|null $json
      *      If set, the request body will be JSON-encoded, and the "content-type" header will be set to "application/json".
      *
-     * @param iterable|string|resource|Traversable|Closure(int $size): string $body
+     * @param mixed[]|string|resource|Traversable<mixed>|Closure(int $size): string $body
      *      The request body. An array is treated as FormData.
      *      If a Closure is provided, it should return a string smaller than the specified size argument.
+     *      Traversable is treated as a stream resource.
      *
-     * @param iterable|null $headers
+     * @param iterable<int|string, string>|null $headers
      *      Headers, provided as keys or as part of values, to be included in the HTTP request.
      *
      * @param float|null $timeout
@@ -541,7 +548,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * @param Closure|null $onProgress
      *      A callable function to monitor the progress of the request.
      *
-     * @param array|null $extra
+     * @param array<string, mixed>|null $extra
      *      Additional options for fine-tuning the request.
      *
      * @return HttpResponse
@@ -551,7 +558,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
     public function delete(
         string $url,
         ?array $query = null,
-        ?array $json = null,
+        mixed $json = null,
         mixed $body = null,
         ?iterable $headers = null,
         ?float $timeout = null,
@@ -589,7 +596,9 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
     /**
      * You can use this to add more decorators, combined with getClient()
      *
-     * @example $client->addDecorator(new RetryableHttpClient($client->getClient(), 3))
+     * @param array<string, mixed> $options
+     * @see HttpClientInterface::OPTIONS_DEFAULTS for options
+     * @example $client->addDecorator(new BlackfiredHttpClient($http->getClient(), $blackfire))
      */
     public function setClient(HttpClientInterface $client, array $options = []): self
     {
@@ -606,7 +615,9 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
     /**
      * You can use this to create a new instance with an additional decorator, combined with getClient()
      *
-     * @example $new = $client->withDecorator(new RetryableHttpClient($client->getClient(), 3))
+     * @param array<string, mixed> $options
+     * @see HttpClientInterface::OPTIONS_DEFAULTS for options
+     * @example $new = $client->withDecorator(new BlackfiredHttpClient($http->getClient(), $blackfire))
      */
     public function withClient(HttpClientInterface $client, array $options = []): self
     {
@@ -618,6 +629,11 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      * Use false to reset option to default. (remove it from the options)
      * This does not apply to $buffer as false is a valid value.
      * null means the option will not be changed.
+     *
+     * @param iterable<int|string, string>|false|null $headers
+     * @param array{0: string, 1?: string|null}|string|false|null $authBasic
+     * @param array<string, mixed>|false|null $extra
+     * @param array<string, string>|null $resolve
      */
     public function withOptions(
         string|false|null $baseUri = null,
@@ -625,7 +641,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         float|false|null $timeout = null,
         float|false|null $maxDuration = null,
         iterable|false|null $headers = null,
-        array|string|null $authBasic = null,
+        array|string|false|null $authBasic = null,
         int|false|null $maxRedirects = null,
         Closure|false|null $onProgress = null,
         array|false|null $extra = null,

@@ -5,6 +5,9 @@ namespace Efabrica\HttpClient\Tracy;
 use Latte\Engine;
 use Tracy\IBarPanel;
 
+/**
+ * Panel for Tracy debugger that shows all HTTP requests made by the SharedTraceableHttpClient.
+ */
 final class HttpPanel implements IBarPanel
 {
     private Engine $latte;

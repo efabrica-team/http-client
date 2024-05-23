@@ -12,10 +12,15 @@ use const JSON_THROW_ON_ERROR;
 
 final class SerializedResponse implements ResponseInterface
 {
+    /** @var array<string, mixed> */
     private array $headers = [];
 
+    /** @var mixed[]|null  */
     private ?array $jsonData = null;
 
+    /**
+     * @param array<string, mixed> $info
+     */
     public function __construct(private readonly string $content, private array $info = [])
     {
         self::addResponseHeaders($info['response_headers'], $this->info, $this->headers);
@@ -26,6 +31,9 @@ final class SerializedResponse implements ResponseInterface
         return $this->info['http_code'];
     }
 
+    /**
+     * @return array<string, string[]>
+     */
     public function getHeaders(bool $throw = true): array
     {
         return $this->headers;
@@ -36,6 +44,9 @@ final class SerializedResponse implements ResponseInterface
         return $this->content;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function toArray(bool $throw = true): array
     {
         if ('' === $content = $this->getContent($throw)) {
@@ -72,6 +83,11 @@ final class SerializedResponse implements ResponseInterface
         return $type === null ? $this->info : $this->info[$type] ?? null;
     }
 
+    /**
+     * @param string[] $responseHeaders
+     * @param array<string, mixed> $info
+     * @param array<string, string[]> $headers
+     */
     private static function addResponseHeaders(array $responseHeaders, array &$info, array &$headers, string &$debug = ''): void
     {
         foreach ($responseHeaders as $h) {

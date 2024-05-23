@@ -29,8 +29,5 @@ jobs:
       - name: Composer update
         run: composer update --prefer-lowest --no-progress --no-interaction
 
-      - name: Install PHPStan as dev dependency
-        run: composer require phpstan/phpstan --dev
-
       - name: PHPStan analyse
         run: vendor/bin/phpstan analyze src --level=8 --no-progress
