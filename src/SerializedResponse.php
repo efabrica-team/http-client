@@ -10,7 +10,7 @@ use function strlen;
 use const JSON_BIGINT_AS_STRING;
 use const JSON_THROW_ON_ERROR;
 
-class SerializedResponse implements ResponseInterface
+final class SerializedResponse implements ResponseInterface
 {
     private array $headers = [];
 
