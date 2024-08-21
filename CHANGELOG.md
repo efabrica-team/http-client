@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [0.3.1] - 2024-08-21
+
 ## [0.3.0] - 2024-05-23
 ### Added
 - Rewrite of RetryStrategy - lots of code removed, made much simpler and cleaner. (BC Break)
@@ -44,7 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2024-03-27
 - Initial release
 
-[Unreleased]: https://github.com/efabrica-team/http-client/compare/0.3.0...master
+[Unreleased]: https://github.com/efabrica-team/http-client/compare/0.3.1...master
+[0.3.1]: https://github.com/efabrica-team/http-client/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/efabrica-team/http-client/compare/0.2.4...0.3.0
 [0.2.4]: https://github.com/efabrica-team/http-client/compare/0.2.3...0.2.4
 [0.2.3]: https://github.com/efabrica-team/http-client/compare/0.2.2...0.2.3
