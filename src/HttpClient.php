@@ -5,9 +5,9 @@ namespace Efabrica\HttpClient;
 use Closure;
 use Efabrica\HttpClient\Retry\RetryableHttpClient;
 use Efabrica\HttpClient\Tracy\SharedTraceableHttpClient;
+use Efabrica\RevoltCurlClient\RevoltCurlClient;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
-use Riki137\AmpClient\AmpHttpClientV5;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 use Symfony\Component\HttpClient\Retry\RetryStrategyInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -167,9 +167,9 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         $options = array_filter($options, static fn($v) => $v !== null);
 
         if ($client === null) {
-            if (class_exists(AmpHttpClientV5::class)) {
+            if (class_exists(RevoltCurlClient::class)) {
                 /** @var HttpClientInterface $client */
-                $client = new AmpHttpClientV5($options, null, $maxHostConnections, $maxPendingPushes);
+                $client = new RevoltCurlClient($options, $maxHostConnections, $maxPendingPushes);
             } else {
                 $client = SymfonyHttpClient::create($options, $maxHostConnections, $maxPendingPushes);
             }
