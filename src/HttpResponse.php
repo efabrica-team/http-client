@@ -6,6 +6,7 @@ use ArrayAccess;
 use JsonSerializable;
 use LogicException;
 use Serializable;
+use SplObjectStorage;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -28,8 +29,11 @@ final class HttpResponse implements ResponseInterface, Serializable, ArrayAccess
     /** @var mixed[]|null */
     private ?array $jsonData = null;
 
+    private static SplObjectStorage $responseRefs;
+
     public function __construct(private ResponseInterface $response)
     {
+        $this->putResponseRef($response);
     }
 
     public function getInnerResponse(): ResponseInterface
@@ -257,16 +261,25 @@ final class HttpResponse implements ResponseInterface, Serializable, ArrayAccess
         $this->response = clone $this->response;
     }
 
-    public function __destruct()
-    {
+    private function putResponseRef(ResponseInterface $response): void {
         if (PHP_VERSION_ID >= 84000) {
             return;
         }
+        self::$responseRefs ??= new SplObjectStorage();
+        self::$responseRefs->attach($response);
+    }
+
+    public function __destruct()
+    {
+        if (self::$responseRefs === null) {
+            return;
+        }
+
         // prevent bug for fiber execution context
         $response = $this->response;
         async(static function () use ($response) {
             $response->getHeaders();
+            self::$responseRefs?->detach($response);
         });
-        unset($this->response);
     }
 }
