@@ -278,8 +278,8 @@ final class HttpResponse implements ResponseInterface, Serializable, ArrayAccess
         // prevent bug for fiber execution context
         $response = $this->response;
         async(static function () use ($response) {
-            $response->getHeaders();
+            $response->getHeaders(false);
             self::$responseRefs?->detach($response);
-        });
+        })->ignore();
     }
 }
