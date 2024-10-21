@@ -24,12 +24,14 @@
                         <div id="efhttp-opts-{$i}" class="tracy-collapsed">
                             <pre>{spaceless}
                             {foreach $request->getOptions() as $reqKey => $reqVal}
-                                <b>{$reqKey}</b>:
-                                {if is_scalar($reqVal)}
-                                    {do var_export($reqVal)}
-                                {else}
-                                    {do dump($reqVal)}
-                                {/if}
+                                <div>
+                                    <b>{$reqKey}</b>:
+                                    {if is_scalar($reqVal)}
+                                        {do var_export($reqVal)}
+                                    {else}
+                                        {do dump($reqVal)}
+                                    {/if}
+                                </div>
                             {/foreach}
                             {/spaceless}</pre>
                         </div>
@@ -37,12 +39,14 @@
                         <div id="efhttp-info-{$i}" class="tracy-collapsed">
                             <pre>{spaceless}
                                     {foreach $request->getInfo() as $reqKey => $reqVal}
-                                        <b>{$reqKey}</b>:
-                                        {if is_scalar($reqVal)}
-                                            {do var_export($reqVal)}
-                                        {else}
-                                            {do dump($reqVal)}
-                                        {/if}
+                                        <div>
+                                            <b>{$reqKey}</b>:
+                                            {if is_scalar($reqVal)}
+                                                {do var_export($reqVal)}
+                                            {else}
+                                                {do dump($reqVal)}
+                                            {/if}
+                                        </div>
                                     {/foreach}
                             {/spaceless}</pre>
                         </div>

@@ -29,7 +29,7 @@ final class HttpResponse implements ResponseInterface, Serializable, ArrayAccess
     /** @var mixed[]|null */
     private ?array $jsonData = null;
 
-    private static SplObjectStorage $responseRefs;
+    private static ?SplObjectStorage $responseRefs = null;
 
     public function __construct(private ResponseInterface $response)
     {
@@ -261,7 +261,8 @@ final class HttpResponse implements ResponseInterface, Serializable, ArrayAccess
         $this->response = clone $this->response;
     }
 
-    private function putResponseRef(ResponseInterface $response): void {
+    private function putResponseRef(ResponseInterface $response): void
+    {
         if (PHP_VERSION_ID >= 84000) {
             return;
         }
