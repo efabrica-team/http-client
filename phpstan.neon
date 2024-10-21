@@ -1,4 +1,6 @@
 parameters:
+    level: 8
+    paths: [ src ]
     reportUnmatchedIgnoredErrors: true
     ignoreErrors:
         # this is unfixable if we want to support multiple psr/log versions

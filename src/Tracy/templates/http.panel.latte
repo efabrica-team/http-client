@@ -22,11 +22,33 @@
                     <td rowspan="2">
                         <a class="tracy-toggle tracy-collapsed" data-tracy-href="#efhttp-opts-{$i}">Options</a>
                         <div id="efhttp-opts-{$i}" class="tracy-collapsed">
-                            {do dump($request->getOptions())}
+                            <pre>{spaceless}
+                            {foreach $request->getOptions() as $reqKey => $reqVal}
+                                <div>
+                                    <b>{$reqKey}</b>:
+                                    {if is_scalar($reqVal)}
+                                        {do var_export($reqVal)}
+                                    {else}
+                                        {do dump($reqVal)}
+                                    {/if}
+                                </div>
+                            {/foreach}
+                            {/spaceless}</pre>
                         </div>
                         <a class="tracy-toggle tracy-collapsed" data-tracy-href="#efhttp-info-{$i}">Info</a>
                         <div id="efhttp-info-{$i}" class="tracy-collapsed">
-                            {do dump($request->getInfo())}
+                            <pre>{spaceless}
+                                    {foreach $request->getInfo() as $reqKey => $reqVal}
+                                        <div>
+                                            <b>{$reqKey}</b>:
+                                            {if is_scalar($reqVal)}
+                                                {do var_export($reqVal)}
+                                            {else}
+                                                {do dump($reqVal)}
+                                            {/if}
+                                        </div>
+                                    {/foreach}
+                            {/spaceless}</pre>
                         </div>
                         {var $content = $request->getContent()}
                         <a n:if="$content !== null" class="tracy-toggle tracy-collapsed"
@@ -43,7 +65,7 @@
                             Client
                         </a>
                         <div id="efhttp-client-{spl_object_id($request->getClient())}" class="tracy-collapsed">
-                            {do dump($request->getClient())}
+                            {get_class($request->getClient())}#{spl_object_id($request->getClient())}
                         </div>
                     </td>
                 </tr>
