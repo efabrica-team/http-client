@@ -138,6 +138,17 @@ $newHttp = $http->withOptions(baseUrl: 'https://api.new-example.com', /* ... */)
 This example shows how to create a new instance of `HttpClient` with updated options using the `withOptions` method. 
 The original `HttpClient` instance remains unchanged.
 
+### Tracy integration
+
+```yaml
+# config.neon
+tracy:
+  blueScreen:
+    - Efabrica\HttpClient\Tracy\HttpResponseBluescreen::renderException
+  bar:
+    - Efabrica\HttpClient\Tracy\HttpPanel()
+```
+
 ## Contributions
 
 Contributions are welcome! If you encounter any issues or have suggestions for improvements, please open an issue or submit a pull request.
