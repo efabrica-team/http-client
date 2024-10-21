@@ -12,6 +12,10 @@ use Tracy\Debugger;
 
 final class HttpResponseBluescreen
 {
+    /**
+     * @param Throwable|null $e
+     * @return array{tab: string, panel: string}|null
+     */
     public static function renderException(?Throwable $e): ?array
     {
         $response = self::getResponse($e);
@@ -58,6 +62,4 @@ final class HttpResponseBluescreen
         </div>
 HTML;
     }
-
-
 }
