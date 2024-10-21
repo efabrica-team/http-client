@@ -29,6 +29,7 @@ final class HttpResponse implements ResponseInterface, Serializable, ArrayAccess
     /** @var mixed[]|null */
     private ?array $jsonData = null;
 
+    /** @var SplObjectStorage<ResponseInterface|object, mixed>|null */
     private static ?SplObjectStorage $responseRefs = null;
 
     public function __construct(private ResponseInterface $response)
