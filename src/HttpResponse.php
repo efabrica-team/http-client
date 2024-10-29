@@ -276,6 +276,9 @@ final class HttpResponse implements ResponseInterface, Serializable, ArrayAccess
         if (self::$responseRefs === null) {
             return;
         }
+        if (!function_exists('Amp\\async')) {
+            return;
+        }
 
         // prevent bug for fiber execution context
         $response = $this->response;
