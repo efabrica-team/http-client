@@ -19,6 +19,8 @@ use Traversable;
 
 final class HttpClient implements ResetInterface, LoggerAwareInterface
 {
+    public static bool $useRevolt = true;
+
     private HttpClientInterface $client;
 
     /**
@@ -145,7 +147,8 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         int $maxHostConnections = 6,
         int $maxPendingPushes = 50,
         private ?LoggerInterface $logger = null,
-        ?bool $debug = null
+        ?bool $debug = null,
+        ?bool $revolt = null
     ) {
         $options = [
                 'base_uri' => $baseUri,
@@ -167,7 +170,8 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         $options = array_filter($options, static fn($v) => $v !== null);
 
         if ($client === null) {
-            if (class_exists(RevoltCurlClient::class)) {
+            $revolt ??= self::$useRevolt;
+            if ($revolt && class_exists(RevoltCurlClient::class)) {
                 /** @var HttpClientInterface $client */
                 $client = new RevoltCurlClient($options, $maxHostConnections, $maxPendingPushes);
             } else {
