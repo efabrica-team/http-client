@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [0.3.4] - 2024-11-12
+### Added
+- revolt parameter
+
 ## [0.3.3] - 2024-10-29
 ### Fixed
 - fix when amphp/amp was not required
@@ -56,7 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2024-03-27
 - Initial release
 
-[Unreleased]: https://github.com/efabrica-team/http-client/compare/0.3.3...master
+[Unreleased]: https://github.com/efabrica-team/http-client/compare/0.3.4...master
+[0.3.4]: https://github.com/efabrica-team/http-client/compare/0.3.3...0.3.4
 [0.3.3]: https://github.com/efabrica-team/http-client/compare/0.3.2...0.3.3
 [0.3.2]: https://github.com/efabrica-team/http-client/compare/0.3.1...0.3.2
 [0.3.1]: https://github.com/efabrica-team/http-client/compare/0.3.0...0.3.1
