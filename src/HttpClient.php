@@ -172,7 +172,6 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         if ($client === null) {
             $revolt ??= self::$useRevolt;
             if ($revolt && class_exists(RevoltCurlClient::class)) {
-                /** @var HttpClientInterface $client */
                 $client = new RevoltCurlClient($options, $maxHostConnections, $maxPendingPushes);
             } else {
                 $client = SymfonyHttpClient::create($options, $maxHostConnections, $maxPendingPushes);
