@@ -6,14 +6,12 @@ use ArrayAccess;
 use JsonSerializable;
 use LogicException;
 use Serializable;
-use SplObjectStorage;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
-use function Amp\async;
 
 /**
  * An asynchronous response to an HTTP request.
@@ -29,12 +27,8 @@ final class HttpResponse implements ResponseInterface, Serializable, ArrayAccess
     /** @var mixed[]|null */
     private ?array $jsonData = null;
 
-    /** @var SplObjectStorage<ResponseInterface|object, mixed>|null */
-    private static ?SplObjectStorage $responseRefs = null;
-
     public function __construct(private ResponseInterface $response)
     {
-        $this->putResponseRef($response);
     }
 
     public function getInnerResponse(): ResponseInterface
@@ -260,31 +254,5 @@ final class HttpResponse implements ResponseInterface, Serializable, ArrayAccess
     public function __clone(): void
     {
         $this->response = clone $this->response;
-    }
-
-    private function putResponseRef(ResponseInterface $response): void
-    {
-        if (PHP_VERSION_ID >= 84000) {
-            return;
-        }
-        self::$responseRefs ??= new SplObjectStorage();
-        self::$responseRefs->attach($response);
-    }
-
-    public function __destruct()
-    {
-        if (self::$responseRefs === null) {
-            return;
-        }
-        if (!function_exists('Amp\\async')) {
-            return;
-        }
-
-        // prevent bug for fiber execution context
-        $response = $this->response;
-        async(static function () use ($response) {
-            $response->getHeaders(false);
-            self::$responseRefs?->detach($response);
-        })->ignore();
     }
 }
