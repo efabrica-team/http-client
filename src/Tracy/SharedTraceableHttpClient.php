@@ -26,7 +26,7 @@ final class SharedTraceableHttpClient implements HttpClientInterface
 
     public function __construct(private HttpClientInterface $client)
     {
-        self::$defaultBuffer ??= class_exists(Debugger::class) && Debugger::isEnabled();
+        self::$defaultBuffer ??= class_exists(Debugger::class) && Debugger::isEnabled() && PHP_SAPI !== 'cli';
     }
 
     /**
@@ -38,7 +38,7 @@ final class SharedTraceableHttpClient implements HttpClientInterface
         if (false === ($options['extra']['trace'] ?? true)) {
             return $this->client->request($method, $url, $options);
         }
-        if (($options['extra']['trace_content'] ?? self::$defaultBuffer) === true) {
+        if (!isset($options['buffer']) && ($options['extra']['trace_content'] ?? self::$defaultBuffer) === true) {
             $options['buffer'] = true;
         }
 
