@@ -264,7 +264,7 @@ final class HttpResponse implements ResponseInterface, Serializable, ArrayAccess
 
     private function putResponseRef(ResponseInterface $response): void
     {
-        if (PHP_VERSION_ID >= 84000) {
+        if (version_compare(PHP_VERSION, '8.4.0') >= 0) {
             return;
         }
         self::$responseRefs ??= new SplObjectStorage();

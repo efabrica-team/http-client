@@ -25,7 +25,7 @@
     "require-dev": {
         "tracy/tracy": "^2.10",
         "latte/latte": "^3.0",
-        "phpstan/phpstan": "^1.11",
+        "phpstan/phpstan": "^2.1",
         "squizlabs/php_codesniffer": "^3.10",
         "efabrica/revolt-curl-client": "^0.1.0"
     }
