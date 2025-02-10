@@ -18,7 +18,7 @@
         "php": "^8.1",
         "ext-curl": "*",
         "symfony/http-client": "^6.4|^7.0",
-        "symfony/stopwatch": "^6.4|^7.0",
+        "symfony/stopwatch": "^6.4|^7.0"
     },
     "suggest": {
         "efabrica/revolt-curl-client": "for AMPHPv3 event loop support"
