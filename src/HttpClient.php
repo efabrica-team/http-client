@@ -121,6 +121,9 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      *      The maximum number of pushed responses to accept in the queue.
      *       Used only when inner client is not specified.
      *
+     * @param bool $reuseConnections
+     *      Whether to reuse connections. Defaults to false because connections tend to hang with PHP-FPM.
+     *
      * @param LoggerInterface|null $logger
      *      A PSR-3 logger.
      */
@@ -148,8 +151,18 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         int $maxPendingPushes = 50,
         private ?LoggerInterface $logger = null,
         ?bool $debug = null,
-        ?bool $revolt = null
+        ?bool $revolt = null,
+        bool $reuseConnections = false,
     ) {
+        if (!$reuseConnections) {
+            $extra['curl'] ??= [];
+            $extra['curl'][CURLOPT_FORBID_REUSE] = 1;
+            if ($headers === null || is_array($headers)) {
+                $headers ??= [];
+                $headers['Connection'] ??= 'close';
+            }
+        }
+
         $options = [
                 'base_uri' => $baseUri,
                 'auth_bearer' => $authBearer,
