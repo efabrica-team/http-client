@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Don't reuse connections (leaves PHP-FPM connections hanging)
-
+- force enabled buffer in Shared Traceable client response
 
 ## [0.3.5] - 2024-11-12
 ### Added
