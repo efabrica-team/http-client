@@ -5,11 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.4.0] - 2025-03-26
 ### Added
 - PassHeaders option to pass headers from the original request. E.g. to track users across multiple services.
 
-
 ## [0.3.7] - 2025-02-10
+### Fixed
+- Fixed composer.json
 
 ## [0.3.6] - 2025-02-10
 ### Fixed
@@ -68,7 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2024-03-27
 - Initial release
 
-[Unreleased]: https://github.com/efabrica-team/http-client/compare/0.3.7...master
+[Unreleased]: https://github.com/efabrica-team/http-client/compare/0.4.0...master
+[0.4.0]: https://github.com/efabrica-team/http-client/compare/0.3.7...0.4.0
 [0.3.7]: https://github.com/efabrica-team/http-client/compare/0.3.6...0.3.7
 [0.3.6]: https://github.com/efabrica-team/http-client/compare/0.3.5...0.3.6
 [0.3.5]: https://github.com/efabrica-team/http-client/compare/0.3.3...0.3.5
