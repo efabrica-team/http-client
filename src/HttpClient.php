@@ -23,6 +23,9 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
 
     private HttpClientInterface $client;
 
+    /** @var string[] */
+    private array $passHeaders = [];
+
     /**
      * @param string|array<string|array<string>>|null $baseUri
      *      - If a single URI is provided:
@@ -126,6 +129,9 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
      *
      * @param LoggerInterface|null $logger
      *      A PSR-3 logger.
+     *
+     * @param string[] $passHeaders
+     *      Headers that should be passed to the next request.
      */
     public function __construct(
         array|string|null $baseUri = null,
@@ -153,7 +159,9 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         ?bool $debug = null,
         ?bool $revolt = null,
         bool $reuseConnections = false,
+        array $passHeaders = []
     ) {
+        $this->passHeaders = $passHeaders;
         if (!$reuseConnections) {
             $extra['curl'] ??= [];
             $extra['curl'][CURLOPT_FORBID_REUSE] = 1;
@@ -253,6 +261,15 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         ?Closure $onProgress = null,
         ?array $extra = null,
     ): HttpResponse {
+        $headersToPass = [];
+        foreach ($this->passHeaders as $header) {
+            $search = str_replace('-', '_', strtoupper($header));
+            if (isset($_SERVER[$search]) || isset($_SERVER['HTTP_' . $search])) {
+                $headersToPass[$header] = $_SERVER[$search] ?? $_SERVER['HTTP_' . $search]; // Copy header from original request
+            }
+        }
+        $headers = array_merge($headersToPass, (array) $headers);
+
         $options = array_filter([
             'query' => $query,
             'json' => $json,
