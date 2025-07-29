@@ -199,9 +199,6 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
             }
             $options = [];
         }
-        if ($debug || ($debug === null && (class_exists(Debugger::class) && Debugger::isEnabled()))) {
-            $client = new SharedTraceableHttpClient($client);
-        }
         $client = new RetryableHttpClient($client, $retry, $maxRetries, $logger, $baseUri);
         $this->setClient($client, $options);
     }
