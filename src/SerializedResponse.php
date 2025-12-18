@@ -78,7 +78,7 @@ final class SerializedResponse implements ResponseInterface
     {
     }
 
-    public function getInfo(string $type = null): mixed
+    public function getInfo(?string $type = null): mixed
     {
         return $type === null ? $this->info : $this->info[$type] ?? null;
     }

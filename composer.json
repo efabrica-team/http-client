@@ -15,10 +15,10 @@
         }
     ],
     "require": {
-        "php": "^8.1",
+        "php": "^8.4",
         "ext-curl": "*",
-        "symfony/http-client": "^6.4|^7.0",
-        "symfony/stopwatch": "^6.4|^7.0"
+        "symfony/http-client": "^8.0",
+        "symfony/stopwatch": "^8.0"
     },
     "suggest": {
         "efabrica/revolt-curl-client": "for AMPHPv3 event loop support"
@@ -27,7 +27,7 @@
         "tracy/tracy": "^2.10",
         "latte/latte": "^3.0",
         "phpstan/phpstan": "^2.1",
-        "squizlabs/php_codesniffer": "^3.10",
-        "efabrica/revolt-curl-client": "^0.1.0"
+        "squizlabs/php_codesniffer": "^4.0",
+        "efabrica/revolt-curl-client": "^0.1.4"
     }
 }

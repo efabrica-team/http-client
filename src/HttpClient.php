@@ -688,7 +688,7 @@ final class HttpClient implements ResetInterface, LoggerAwareInterface
         string|false|null $noProxy = null,
         string|false|null $bindTo = null,
         SSLContext|null $ssl = null,
-        RetryStrategyInterface|false $retry = null,
+        RetryStrategyInterface|false|null $retry = null,
         int|null $maxRetries = null,
     ): self {
         $options = [
