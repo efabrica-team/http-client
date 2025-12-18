@@ -55,7 +55,7 @@ final class SharedTraceableHttpClient implements HttpClientInterface
         return $response;
     }
 
-    public function stream(iterable|ResponseInterface $responses, float $timeout = null): ResponseStreamInterface
+    public function stream(iterable|ResponseInterface $responses, ?float $timeout = null): ResponseStreamInterface
     {
         if ($this->client instanceof TraceableHttpClient) {
             return $this->client->stream($responses, $timeout);
