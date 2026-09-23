@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Lowered minimum PHP requirement to ^8.2 (was ^8.4) and allowed symfony/http-client and symfony/stopwatch ^7.0 as well as ^8.0, so the package supports PHP 8.2 through 8.5.
 
 ## [0.5.0] - 2025-12-18
 ### Changed
