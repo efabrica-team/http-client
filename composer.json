@@ -15,10 +15,10 @@
         }
     ],
     "require": {
-        "php": "^8.4",
+        "php": "^8.2",
         "ext-curl": "*",
-        "symfony/http-client": "^8.0",
-        "symfony/stopwatch": "^8.0"
+        "symfony/http-client": "^7.0 || ^8.0",
+        "symfony/stopwatch": "^7.0 || ^8.0"
     },
     "suggest": {
         "efabrica/revolt-curl-client": "for AMPHPv3 event loop support"
